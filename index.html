@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medicamentos</title>
+<meta name="theme-color" content="#0D6672">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Medicamentos">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+:root{--bg:#EDF1F2;--surface:#FFFFFF;--ink:#14252A;--muted:#566A70;--line:#D2DCDF;--accent:#0D6672;--accent-ink:#FFFFFF;--accent-soft:#DCEDEF;--red:#B42318;--red-bg:#FCEAE8;--amber:#8F5600;--amber-bg:#FFF1D1;--green:#1B6E45;--green-bg:#E2F2E9;--pill:#F4F7F7;--shadow:0 1px 2px rgba(20,37,42,.06);--f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--f-num:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#0F1A1D;--surface:#172529;--ink:#E4ECEE;--muted:#93A6AB;--line:#2A3B40;--accent:#5CC3CF;--accent-ink:#0B1A1D;--accent-soft:#1B3A3F;--red:#FF8A7E;--red-bg:#3A1C1A;--amber:#F2BE5C;--amber-bg:#3A2D12;--green:#6CD39C;--green-bg:#143023;--pill:#1E2F33;--shadow:none;color-scheme:dark}}
+*{box-sizing:border-box}[hidden]{display:none!important}html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%}
+.wrap{max-width:780px;margin:0 auto;padding-inline:16px;padding-top:20px;padding-bottom:calc(48px + env(safe-area-inset-bottom))}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 16px;margin-bottom:16px}
+h1{font-size:1.6rem;margin:0;line-height:1.15;text-wrap:balance}
+.hoy{color:var(--muted);font-size:.95rem}
+nav{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:18px;overflow-x:auto;position:sticky;top:0;z-index:5}
+nav button{flex:1 0 auto;border:0;background:transparent;color:var(--muted);font:inherit;font-weight:700;padding:9px 12px;border-radius:9px;cursor:pointer;white-space:nowrap}
+nav button[aria-selected="true"]{background:var(--accent);color:var(--accent-ink)}
+nav .badge{display:inline-block;min-width:1.4em;padding:0 .35em;margin-left:6px;border-radius:99px;background:var(--red);color:var(--surface);font-size:.8rem;line-height:1.4em}
+h2{font-size:1.15rem;margin:22px 0 10px}h2:first-child{margin-top:0}
+.muted{color:var(--muted)}.small{font-size:.88rem}
+.resumen{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:16px}
+.resumen div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.resumen b{display:block;font-family:var(--f-num);font-size:1.6rem;line-height:1.1}
+.resumen .r b{color:var(--red)}.resumen .a b{color:var(--amber)}.resumen .g b{color:var(--green)}
+.list{display:flex;flex-direction:column;gap:8px}
+.med{display:grid;grid-template-columns:6px minmax(0,1fr);background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+.med .bar{background:var(--line)}.med.agotado .bar{background:var(--red)}.med.reponer .bar{background:var(--amber)}.med.ok .bar{background:var(--green)}
+.med .body{padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.row{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px}
+.name{font-weight:700;font-size:1.05rem}.sub{color:var(--muted);font-size:.92rem}
+.chip{display:inline-block;font-size:.8rem;font-weight:700;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.chip.agotado{background:var(--red-bg);color:var(--red)}.chip.reponer{background:var(--amber-bg);color:var(--amber)}.chip.ok{background:var(--green-bg);color:var(--green)}.chip.neutral{background:var(--pill);color:var(--muted)}
+.facts{display:flex;flex-wrap:wrap;gap:4px 18px;font-size:.92rem}.facts span b{font-family:var(--f-num);font-weight:500}
+.actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+button.btn{font:inherit;font-weight:700;font-size:.92rem;border-radius:9px;padding:7px 12px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+button.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button.btn.danger{color:var(--red);border-color:var(--red)}button.btn:disabled{opacity:.55;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.warn{background:var(--amber-bg);color:var(--amber);border-radius:10px;padding:8px 12px;font-size:.9rem}
+.farmacia{background:var(--surface);border:1px dashed var(--accent);border-radius:12px;padding:12px 14px;margin-top:18px}
+.farmacia pre{font-family:var(--f-body);white-space:pre-wrap;margin:8px 0;font-size:.95rem}
+.momento{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.momento h3{margin:0;padding:10px 14px;font-size:1rem;background:var(--accent-soft);color:var(--ink);display:flex;justify-content:space-between}
+.toma{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center;padding:10px 14px;border-top:1px solid var(--line)}
+.pills{display:flex;gap:3px;min-width:58px}
+.pillg{width:16px;height:16px;border-radius:50%;background:var(--accent);display:inline-block}
+.pillg.half{background:linear-gradient(90deg,var(--accent) 50%,var(--line) 50%)}.pillg.patch{border-radius:3px;width:20px}
+.qty{font-family:var(--f-num);font-size:.85rem;color:var(--muted)}
+.tablewrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;white-space:nowrap}
+td.n{font-family:var(--f-num);text-align:right;white-space:nowrap}tr:last-child td{border-bottom:0}tr.inactivo td{color:var(--muted)}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);font:inherit;font-weight:700;cursor:pointer;text-align:left}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.toolbar label{display:flex;gap:6px;align-items:center;font-size:.92rem}
+.mov{display:grid;grid-template-columns:72px minmax(0,1fr);gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.mov .f{font-family:var(--f-num);color:var(--muted);font-size:.88rem}
+.overlay{position:fixed;inset:0;background:rgba(10,20,22,.5);display:flex;align-items:flex-end;justify-content:center;z-index:20;padding:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+@media (min-width:640px){.overlay{align-items:center}}
+.sheet{background:var(--surface);color:var(--ink);border-radius:16px;width:100%;max-width:520px;max-height:calc(100% - 24px);overflow:auto;padding:18px}
+.sheet h3{margin:0 0 4px;font-size:1.15rem}
+form .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;margin-top:12px}form .full{grid-column:1/-1}
+form label,.loginbox label{display:flex;flex-direction:column;gap:4px;font-size:.88rem;font-weight:700;color:var(--muted)}
+form label.check{flex-direction:row;align-items:center;gap:8px;color:var(--ink);font-weight:400}
+input,select{font:inherit;font-size:1rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:8px 10px;width:100%;min-width:0}
+input[type=checkbox]{width:20px;height:20px}
+.tomasgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.formfoot{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:16px}.formfoot .left{margin-right:auto}
+.err{color:var(--red);font-size:.9rem;margin-top:8px}
+.preview{background:var(--accent-soft);border-radius:10px;padding:8px 12px;margin-top:10px;font-size:.92rem}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:22px;text-align:center;color:var(--muted)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:700;z-index:30}
+.loginbox{max-width:420px;margin:24px auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}.loginbox h2{margin-top:0}
+.loginbox form label{margin-top:10px}
+.whoList{display:flex;flex-direction:column;gap:8px;margin-top:12px}.whoBtn{font-size:1.05rem;padding:12px 14px;text-align:left}
+@media (max-width:480px){.resumen b{font-size:1.3rem}.tomasgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tomamain{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
+.tomamain>div:first-child{min-width:0}
+.thumbs{display:flex;gap:6px;flex-shrink:0}
+.thumb{padding:2px;border:1px solid var(--line);border-radius:10px;overflow:hidden;width:64px;height:64px;background:#fff;cursor:pointer}
+.thumb img{width:100%;height:100%;object-fit:contain;display:block}
+.fotoSlots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.fslot{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:12px;padding:8px;min-width:0}
+.fimg{aspect-ratio:1/1;width:100%;border-radius:8px;background:#fff;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--muted);font-size:.85rem}
+.fimg img{width:100%;height:100%;object-fit:contain}
+.fname{font-weight:700;font-size:.9rem}
+label.btn.fbtn,button.btn.fbtn{font:inherit;font-weight:700;font-size:.85rem;border-radius:9px;padding:6px 10px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-align:center;display:block}
+.bigfoto{margin-top:10px;min-height:120px;display:flex;align-items:center;justify-content:center}
+.bigfoto img{max-width:100%;max-height:70vh;border-radius:10px}
+.mcard{border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.mcard.act{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.mkadd{margin-top:14px;border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+.lbl{font-size:.88rem;font-weight:700;color:var(--muted)}
+input[readonly]{opacity:.75}
+.sep{border:0;border-top:1px solid var(--line);margin:18px 0 12px}
+.hoja{background:#fff;color:#14252A;border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:12px;overflow-x:auto}
+.hoja th{text-transform:none;letter-spacing:0;color:#14252A;font-size:inherit;white-space:normal}
+.hoja td{color:#14252A}
+@media print{
+  @page{margin:14mm}
+  html,body{background:#fff!important}
+  .wrap,.noprint,.toast{display:none!important}
+  .overlay{position:static!important;background:none!important;padding:0!important;display:block!important}
+  .sheet{max-width:none!important;max-height:none!important;overflow:visible!important;padding:0!important;border-radius:0!important;background:#fff!important}
+  .hoja{border:0!important;padding:0!important;margin:0!important;overflow:visible!important}
+}
+</style></head><body>
+<div class="wrap">
+  <header>
+    <h1 id="titulo">Medicamentos</h1>
+    <div class="hoy"><span id="hoy"></span></div>
+  </header>
+  <div id="setup" hidden>
+    <div class="loginbox">
+      <h2>Bienvenido</h2>
+      <p class="muted small">Esta app guarda los datos <b>solamente en este dispositivo</b>. No pasan por ningún servidor.</p>
+      <form id="fSetup">
+        <label>Nombre de quien toma los remedios<input id="s-pac" type="text" required placeholder="Tu nombre" autocomplete="off"></label>
+        <div class="err" id="s-err"></div>
+        <div class="formfoot"><button type="submit" class="btn primary">Empezar</button></div>
+      </form>
+      <hr class="sep">
+      <p class="muted small">¿Ya tenés una copia de tus datos (archivo .json)?</p>
+      <label class="btn fbtn">Restaurar desde una copia<input type="file" id="s-file" accept=".json,application/json" hidden></label>
+    </div>
+  </div>
+  <div id="app" hidden>
+    <nav role="tablist">
+      <button role="tab" data-tab="tomas" aria-selected="true">Tomas</button>
+      <button role="tab" data-tab="stock" aria-selected="false">Stock</button>
+      <button role="tab" data-tab="reponer" aria-selected="false">Reponer<span class="badge" id="badge" hidden></span></button>
+      <button role="tab" data-tab="historial" aria-selected="false">Historial</button>
+    </nav>
+    <section id="tab-tomas"><div class="empty">Cargando los medicamentos…</div></section>
+    <section id="tab-stock" hidden></section>
+    <section id="tab-reponer" hidden></section>
+    <section id="tab-historial" hidden></section>
+  </div>
+  <div id="cargando" class="empty">Cargando…</div>
+</div>
+<div id="modal"></div>
+<script>
+(function(){
+'use strict';
+const APP_VERSION='1.1.0';
+const SCHEMA=1;
+
+/* =====================================================================
+   1) BASE DE DATOS LOCAL (IndexedDB) — reemplaza a la planilla de Google
+   ===================================================================== */
+const Store=(()=>{
+  const NAME='medicamentos',STORE='kv';let dbp=null;
+  const open=()=>dbp||(dbp=new Promise((res,rej)=>{let r;try{r=indexedDB.open(NAME,1)}catch(e){rej(e);return}
+    r.onupgradeneeded=()=>r.result.createObjectStore(STORE);
+    r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error||new Error('No se pudo abrir la base'))}));
+  const tx=(mode,fn)=>open().then(db=>new Promise((res,rej)=>{
+    const t=db.transaction(STORE,mode);const st=t.objectStore(STORE);let out;const r=fn(st);
+    if(r)r.onsuccess=()=>{out=r.result};
+    t.oncomplete=()=>res(out);t.onerror=()=>rej(t.error);t.onabort=()=>rej(t.error||new Error('Se canceló la grabación'))}));
+  const putAll=(st,obj)=>Object.keys(obj).forEach(k=>obj[k]===undefined?st.delete(k):st.put(obj[k],k));
+  return{
+    get:k=>tx('readonly',st=>st.get(k)),
+    keys:()=>tx('readonly',st=>st.getAllKeys()),
+    put:obj=>tx('readwrite',st=>{putAll(st,obj)}),
+    replace:obj=>tx('readwrite',st=>{st.clear();putAll(st,obj)})
+  };
+})();
+
+const D={config:null,meds:[],movs:[],marcas:[],fotos:{}};
+const MAXMOV=5000;
+
+async function cargarDB(){
+  const ks=['config','meds','movs','marcas','fotos','schema'];
+  const v=await Promise.all(ks.map(k=>Store.get(k)));
+  D.config=v[0]||null;D.meds=v[1]||[];D.movs=v[2]||[];D.marcas=v[3]||[];D.fotos=v[4]||{};
+  await migrar(v[5]);
+}
+/* Si en una versión futura cambia la forma de guardar los datos, la conversión va acá. */
+async function migrar(v){
+  if(v===SCHEMA)return;
+  // if(v===1){ ...convertir de la estructura 1 a la 2... }
+  await Store.put({schema:SCHEMA});
+}
+async function guardar(keys,extra){
+  const o=Object.assign({},extra||{});keys.forEach(k=>{o[k]=D[k]});
+  try{await Store.put(o)}
+  catch(e){if(e&&e.name==='QuotaExceededError')throw fail('El dispositivo no tiene más espacio para guardar. Probá borrar fotos que no uses.');throw e}
+}
+
+/* =====================================================================
+   2) LÓGICA (equivalente a Código.gs, Marcas.gs y Fotos.gs)
+   ===================================================================== */
+const MOMS=['desayuno','almuerzo','merienda','cena','dormir','parche'];
+const MOM_TXT={desayuno:'Desayuno',almuerzo:'Almuerzo',merienda:'Merienda',cena:'Cena',dormir:'Al dormir',parche:'Parche'};
+const hoy_=()=>todayISO();
+const ahora_=()=>{const d=new Date();return todayISO()+' '+pad(d.getHours())+':'+pad(d.getMinutes())};
+const num_=v=>{if(v===''||v===null||v===undefined)return null;const n=Number(String(v).replace(',','.'));return isNaN(n)?null:n};
+const iso_=v=>{const s=String(v??'').trim();if(!s)return null;const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if(m)return (m[3].length===2?'20'+m[3]:m[3])+'-'+('0'+m[2]).slice(-2)+'-'+('0'+m[1]).slice(-2);return /^\d{4}-\d{2}-\d{2}$/.test(s)?s:null};
+const rid=()=>{let s='';for(let i=0;i<8;i++)s+=Math.floor(Math.random()*16).toString(16);return s};
+const clone=o=>JSON.parse(JSON.stringify(o));
+const consumo_=m=>MOMS.reduce((s,k)=>s+(Number(m.tomas&&m.tomas[k])||0),0);
+function stockAl_(m,iso){if(m.stock===null||m.stock===undefined)return null;const c=consumo_(m);if(!c||m.alternativo||!m.stockFecha)return m.stock;
+  const d=Math.max(0,toDay(iso)-toDay(m.stockFecha));return Math.max(0,m.stock-c*d)}
+const quien_=()=>''; /* app individual: no se registra quién */
+function logMov_(o){
+  D.movs.push({fechaHora:ahora_(),quien:o.quien||'',tipo:o.tipo||'',medId:o.medId||'',medNombre:o.medNombre||'',fecha:o.fecha||hoy_(),
+    cantidad:o.cantidad??null,stockAntes:o.stockAntes??null,stockDespues:o.stockDespues??null,detalle:o.detalle||'',nota:o.nota||''});
+  if(D.movs.length>MAXMOV)D.movs.splice(0,D.movs.length-MAXMOV);
+}
+function findMed_(id){const m=D.meds.find(x=>x.id===id);if(!m)throw fail('No encontré ese medicamento.');return m}
+function payload_(){
+  const c=D.config||{};
+  return{config:{paciente:c.paciente,avisoDias:c.avisoDias,cubrirDias:c.cubrirDias},
+    meds:clone(D.meds),movs:clone(D.movs.slice(-200).reverse()),hoy:hoy_()};
+}
+const fq_=fq;
+
+/* ---- Marcas ---- */
+const marcasDe_=medId=>D.marcas.filter(x=>x.medId===medId);
+function asegurarMarcas_(){
+  let cambio=false;
+  D.meds.forEach(m=>{const mias=marcasDe_(m.id);
+    if(!mias.length){
+      D.marcas.push({id:'mk-'+rid(),medId:m.id,nombre:m.nombre,porCaja:m.porCaja??null,actual:true,alta:ahora_()});
+      const vistos=[m.nombre.toLowerCase()];
+      String(m.equivalentes||'').split(',').map(s=>s.trim()).filter(Boolean).forEach(nom=>{
+        if(vistos.indexOf(nom.toLowerCase())>=0)return;vistos.push(nom.toLowerCase());
+        D.marcas.push({id:'mk-'+rid(),medId:m.id,nombre:nom,porCaja:null,actual:false,alta:ahora_()})});
+      cambio=true;
+    }else if(!mias.some(x=>x.actual)){mias[0].actual=true;cambio=true}
+  });
+  return cambio;
+}
+function marcasPorMed_(){
+  const out={};
+  D.marcas.forEach(x=>{(out[x.medId]=out[x.medId]||[]).push({id:x.id,nombre:x.nombre,porCaja:x.porCaja??null,actual:!!x.actual})});
+  Object.keys(out).forEach(k=>out[k].sort((a,b)=>(b.actual-a.actual)||a.nombre.localeCompare(b.nombre,'es')));
+  return out;
+}
+function aplicarMarca_(medId){
+  const ms=marcasDe_(medId);const act=ms.find(x=>x.actual);if(!act)return;
+  const m=D.meds.find(x=>x.id===medId);if(!m)return;
+  m.nombre=act.nombre;m.porCaja=act.porCaja??null;m.equivalentes=ms.filter(x=>!x.actual).map(x=>x.nombre).join(', ');
+}
+const respMarcas_=extra=>guardar(['meds','movs','marcas','fotos'],extra).then(()=>({data:payload_(),marcas:marcasPorMed_()}));
+function quitarFotosDeMarca_(marcaId,extra){const f=D.fotos[marcaId];if(!f)return;Object.keys(f).forEach(t=>{if(f[t]&&f[t].file)extra['foto:'+f[t].file]=undefined});delete D.fotos[marcaId]}
+
+/* ---- Funciones que llama la pantalla (mismos nombres que en Apps Script) ---- */
+const B={
+  setup(paciente){
+    D.config={paciente:paciente,avisoDias:7,cubrirDias:30,creado:ahora_(),ultimaCopia:null};
+    D.meds=[];D.movs=[];D.marcas=[];D.fotos={};
+    logMov_({tipo:'Inicio',detalle:'Se creó la base en este dispositivo'});
+    return Store.replace({config:D.config,meds:D.meds,movs:D.movs,marcas:D.marcas,fotos:D.fotos,schema:SCHEMA});
+  },
+  getData(){return payload_()},
+
+  corregirStock(_,quien,p){
+    const fe=iso_(p.fecha)||hoy_(),q=quien_(quien);
+    (p.items||[]).forEach(it=>{const m=D.meds.find(x=>x.id===it.medId);const v=Number(it.stock);if(!m||!(v>=0))return;
+      const antes=stockAl_(m,fe);m.stock=v;m.stockFecha=fe;
+      logMov_({quien:q,tipo:'Corrección de stock',medId:m.id,medNombre:m.nombre,fecha:fe,cantidad:v,stockAntes:antes,stockDespues:v})});
+    return guardar(['meds','movs']).then(payload_);
+  },
+
+  guardarMed(_,quien,d){
+    const nombre=String(d.nombre||'').trim();if(!nombre)throw fail('Poné el nombre del medicamento.');
+    const tomas={};MOMS.forEach(k=>{const v=Number(d.tomas&&d.tomas[k]);if(v)tomas[k]=v});
+    const base={nombre:nombre,droga:String(d.droga||'').trim(),dosis:String(d.dosis||'').trim(),accion:String(d.accion||'').trim(),
+      unidad:d.unidad||'comprimido',porCaja:num_(d.porCaja),equivalentes:String(d.equivalentes||'').trim(),
+      notas:String(d.notas||'').trim(),tomas:tomas,alternativo:!!d.alternativo,activo:d.activo!==false};
+    const q=quien_(quien);
+    if(!d.id){
+      const id=nombre.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)+'-'+rid().slice(0,4);
+      const m=Object.assign({id:id,stock:num_(d.stock),stockFecha:iso_(d.stockFecha)||hoy_()},base);
+      D.meds.push(m);
+      logMov_({quien:q,tipo:'Alta',medId:id,medNombre:nombre,fecha:m.stockFecha,stockDespues:m.stock,detalle:[base.droga,base.dosis].filter(Boolean).join(' ')});
+      asegurarMarcas_();
+    }else{
+      const m=findMed_(d.id);const cambios=[];
+      const lab={nombre:'Nombre',droga:'Droga',dosis:'Dosis',accion:'Para qué',unidad:'Forma',porCaja:'Unid. x caja',equivalentes:'Equivalentes',notas:'Notas'};
+      Object.keys(lab).forEach(k=>{const a=m[k]===null||m[k]===undefined?'':String(m[k]),b=base[k]===null?'':String(base[k]);if(a!==b)cambios.push(lab[k]+': '+(a||'—')+' → '+(b||'—'))});
+      MOMS.forEach(k=>{const a=m.tomas[k]||0,b=tomas[k]||0;if(a!==b)cambios.push(MOM_TXT[k]+': '+fq_(a)+' → '+fq_(b))});
+      if(!!m.alternativo!==base.alternativo)cambios.push(base.alternativo?'Pasa a "a demanda"':'Deja de ser "a demanda"');
+      if((m.activo!==false)!==base.activo)cambios.push(base.activo?'Lo vuelve a tomar':'Deja de tomarlo');
+      const tomasCambiaron=MOMS.some(k=>(m.tomas[k]||0)!==(tomas[k]||0))||!!m.alternativo!==base.alternativo;
+      if(tomasCambiaron&&m.stock!==null&&m.stock!==undefined&&m.stockFecha){m.stock=stockAl_(m,hoy_());m.stockFecha=hoy_()}
+      Object.assign(m,base);
+      if(cambios.length)logMov_({quien:q,tipo:base.activo===false&&cambios.join().indexOf('Deja de tomarlo')>=0?'Baja':'Cambio',
+        medId:m.id,medNombre:m.nombre,fecha:hoy_(),detalle:cambios.join(' · ')});
+    }
+    return guardar(['meds','movs','marcas']).then(payload_);
+  },
+
+  borrarMed(_,quien,id){
+    const m=findMed_(id);const extra={};
+    marcasDe_(id).forEach(mk=>quitarFotosDeMarca_(mk.id,extra));
+    D.marcas=D.marcas.filter(x=>x.medId!==id);
+    D.meds=D.meds.filter(x=>x.id!==id);
+    logMov_({quien:quien_(quien),tipo:'Borrado',medId:m.id,medNombre:m.nombre,fecha:hoy_(),stockDespues:m.stock,detalle:'Se borró de la lista'});
+    return guardar(['meds','movs','marcas','fotos'],extra).then(payload_);
+  },
+
+  guardarAjustes(_,quien,p){
+    const c=D.config;
+    c.paciente=String(p.paciente||c.paciente).trim()||c.paciente;
+    c.avisoDias=Number(p.avisoDias)||7;c.cubrirDias=Number(p.cubrirDias)||30;
+    logMov_({quien:quien_(quien),tipo:'Ajustes',fecha:hoy_(),detalle:'Aviso '+c.avisoDias+' días · compra para '+c.cubrirDias+' días'});
+    return guardar(['config','movs']).then(payload_);
+  },
+
+  getMarcas(){return (asegurarMarcas_()?guardar(['marcas']):Promise.resolve()).then(marcasPorMed_)},
+
+  usarMarca(_,quien,p){
+    const el=D.marcas.find(x=>x.id===p.marcaId);if(!el)throw fail('No encontré esa marca.');
+    const antes=marcasDe_(el.medId).find(x=>x.actual);
+    marcasDe_(el.medId).forEach(x=>{x.actual=x.id===el.id});
+    aplicarMarca_(el.medId);
+    logMov_({quien:quien_(quien),tipo:'Cambio de marca',medId:el.medId,medNombre:el.nombre,fecha:hoy_(),detalle:(antes?antes.nombre:'—')+' → '+el.nombre});
+    return respMarcas_();
+  },
+
+  guardarMarca(_,quien,p){
+    const nombre=String(p.nombre||'').trim();if(!nombre)throw fail('Poné el nombre de la marca.');
+    const porCaja=num_(p.porCaja);const q=quien_(quien);let mk;
+    if(p.marcaId){
+      mk=D.marcas.find(x=>x.id===p.marcaId);if(!mk)throw fail('No encontré esa marca.');
+      const det=[];
+      if(mk.nombre!==nombre)det.push('Nombre: '+mk.nombre+' → '+nombre);
+      if((mk.porCaja??null)!==porCaja)det.push('Unid. x caja: '+(mk.porCaja??'—')+' → '+(porCaja??'—'));
+      mk.nombre=nombre;mk.porCaja=porCaja;
+      if(det.length)logMov_({quien:q,tipo:'Marca',medId:mk.medId,medNombre:nombre,fecha:hoy_(),detalle:det.join(' · ')});
+    }else{
+      findMed_(p.medId);
+      if(marcasDe_(p.medId).some(x=>x.nombre.toLowerCase()===nombre.toLowerCase()))throw fail('Esa marca ya está cargada.');
+      mk={id:'mk-'+rid(),medId:p.medId,nombre:nombre,porCaja:porCaja,actual:false,alta:ahora_()};D.marcas.push(mk);
+      logMov_({quien:q,tipo:'Marca',medId:p.medId,medNombre:nombre,fecha:hoy_(),detalle:'Marca agregada'+(porCaja?' (x '+porCaja+')':'')});
+    }
+    aplicarMarca_(mk.medId);
+    return respMarcas_();
+  },
+
+  borrarMarca(_,quien,p){
+    const mk=D.marcas.find(x=>x.id===p.marcaId);if(!mk)throw fail('No encontré esa marca.');
+    if(mk.actual)throw fail('No se puede borrar la marca actual. Primero elegí otra.');
+    const extra={};quitarFotosDeMarca_(mk.id,extra);
+    D.marcas=D.marcas.filter(x=>x.id!==mk.id);
+    aplicarMarca_(mk.medId);
+    logMov_({quien:quien_(quien),tipo:'Marca',medId:mk.medId,medNombre:mk.nombre,fecha:hoy_(),detalle:'Marca borrada'});
+    return respMarcas_(extra);
+  },
+
+  compraConMarca(_,quien,p){
+    let mk;
+    if(p.nueva){
+      const nombre=String(p.nueva.nombre||'').trim();if(!nombre)throw fail('Poné el nombre de la marca nueva.');
+      mk=marcasDe_(p.medId).find(x=>x.nombre.toLowerCase()===nombre.toLowerCase());
+      if(!mk){mk={id:'mk-'+rid(),medId:p.medId,nombre:nombre,porCaja:num_(p.nueva.porCaja),actual:false,alta:ahora_()};D.marcas.push(mk)}
+      else if(num_(p.nueva.porCaja))mk.porCaja=num_(p.nueva.porCaja);
+    }else mk=D.marcas.find(x=>x.id===p.marcaId);
+    if(!mk||mk.medId!==p.medId)throw fail('No encontré esa marca.');
+    let cambioCaja='';const pcNuevo=num_(p.porCaja);
+    if(pcNuevo&&pcNuevo!==mk.porCaja){cambioCaja=' · unid. por caja: '+(mk.porCaja??'—')+' → '+pcNuevo;mk.porCaja=pcNuevo}
+    let add;
+    if(p.cajas){if(!mk.porCaja)throw fail('Esa marca no tiene cargadas las unidades por caja. Cargá unidades sueltas o completá la marca.');add=Number(p.cajas)*mk.porCaja}
+    else add=Number(p.unidades);
+    if(!(add>0))throw fail('La cantidad tiene que ser mayor a cero.');
+    const antesMarca=marcasDe_(mk.medId).find(x=>x.actual);
+    marcasDe_(mk.medId).forEach(x=>{x.actual=x.id===mk.id});
+    aplicarMarca_(mk.medId);
+    const m=findMed_(p.medId);const fe=iso_(p.fecha)||hoy_();
+    const antes=stockAl_(m,fe)||0;m.stock=antes+add;m.stockFecha=fe;
+    const det=(p.cajas?p.cajas+(Number(p.cajas)===1?' caja':' cajas')+' de ':'')+mk.nombre+(mk.porCaja?' (x '+mk.porCaja+')':'')
+      +(antesMarca&&antesMarca.id!==mk.id?' · antes usaba '+antesMarca.nombre:'')+cambioCaja;
+    logMov_({quien:quien_(quien),tipo:'Compra',medId:m.id,medNombre:mk.nombre,fecha:fe,cantidad:add,stockAntes:antes,stockDespues:m.stock,detalle:det,nota:p.nota||''});
+    return respMarcas_();
+  },
+
+  /* ---- Fotos: miniatura junto a los datos, foto grande aparte ---- */
+  getFotos(){return clone(D.fotos)},
+  getFotoGrande(_,fileId){return Store.get('foto:'+fileId).then(v=>{if(!v)throw fail('No encontré esa foto.');return v})},
+  subirFoto(_,quien,p){
+    const mk=D.marcas.find(x=>x.id===p.marcaId);if(!mk)throw fail('No encontré esa marca.');
+    if(['caja','pastilla'].indexOf(p.tipo)<0)throw fail('Tipo de foto no válido.');
+    const g=String(p.grande||''),mi=String(p.mini||''),pre='data:image/jpeg;base64,';
+    if(g.indexOf(pre)!==0||mi.indexOf(pre)!==0)throw fail('La imagen no tiene un formato válido. Probá con otra foto.');
+    if(g.length>4000000)throw fail('La foto es demasiado pesada.');
+    const id='f-'+rid()+rid();const extra={};extra['foto:'+id]=g;
+    const prev=D.fotos[mk.id]&&D.fotos[mk.id][p.tipo];if(prev&&prev.file)extra['foto:'+prev.file]=undefined;
+    (D.fotos[mk.id]=D.fotos[mk.id]||{})[p.tipo]={file:id,mini:mi,actualizado:ahora_(),quien:quien_(quien)};
+    logMov_({quien:quien_(quien),tipo:'Foto',medId:mk.medId,medNombre:mk.nombre,fecha:hoy_(),detalle:'Foto de la '+p.tipo+(prev?' (reemplazada)':' (nueva)')});
+    return guardar(['fotos','movs'],extra).then(()=>clone(D.fotos));
+  },
+  borrarFoto(_,quien,p){
+    const f=D.fotos[p.marcaId];const extra={};
+    if(f&&f[p.tipo]){
+      extra['foto:'+f[p.tipo].file]=undefined;delete f[p.tipo];if(!Object.keys(f).length)delete D.fotos[p.marcaId];
+      const mk=D.marcas.find(x=>x.id===p.marcaId);
+      logMov_({quien:quien_(quien),tipo:'Foto',medId:mk?mk.medId:'',medNombre:mk?mk.nombre:'',fecha:hoy_(),detalle:'Se quitó la foto de la '+p.tipo});
+    }
+    return guardar(['fotos','movs'],extra).then(()=>clone(D.fotos));
+  },
+
+  /* ---- Copia de seguridad ---- */
+  async exportar(){
+    const keys=await Store.keys();const grandes={};
+    for(const k of keys){const s=String(k);if(s.indexOf('foto:')===0)grandes[s.slice(5)]=await Store.get(k)}
+    D.config.ultimaCopia=ahora_();await guardar(['config']);
+    return{app:'medicamentos-pwa',formato:SCHEMA,version:APP_VERSION,exportado:ahora_(),
+      config:D.config,meds:D.meds,movs:D.movs,marcas:D.marcas,fotos:D.fotos,grandes:grandes};
+  },
+  async importar(obj){
+    if(!obj||obj.app!=='medicamentos-pwa'||!Array.isArray(obj.meds)||!obj.config)throw fail('Ese archivo no es una copia de esta app.');
+    const c=obj.config;
+    const config={paciente:String(c.paciente||'').trim()||'Yo',
+      avisoDias:Number(c.avisoDias)||7,cubrirDias:Number(c.cubrirDias)||30,creado:c.creado||ahora_(),ultimaCopia:c.ultimaCopia||null};
+    const o={config:config,meds:obj.meds,movs:Array.isArray(obj.movs)?obj.movs:[],marcas:Array.isArray(obj.marcas)?obj.marcas:[],
+      fotos:obj.fotos&&typeof obj.fotos==='object'?obj.fotos:{},schema:obj.formato||SCHEMA};
+    const gr=obj.grandes||{};Object.keys(gr).forEach(id=>{o['foto:'+id]=gr[id]});
+    await Store.replace(o);
+    await cargarDB();
+  }
+};
+function api(fn,...args){return Promise.resolve().then(()=>{if(!B[fn])throw new Error('Función desconocida: '+fn);return B[fn](...args)})}
+
+/* =====================================================================
+   3) PANTALLA (igual que Index.html, sin Google)
+   ===================================================================== */
+const MOMENTOS=[{k:'desayuno',l:'Desayuno'},{k:'almuerzo',l:'Almuerzo'},{k:'merienda',l:'Merienda'},{k:'cena',l:'Cena'},{k:'dormir',l:'Al dormir'},{k:'parche',l:'Parche (cambio diario)'}];
+const UNIDADES={comprimido:['comprimido','comprimidos'],capsula:['cápsula','cápsulas'],parche:['parche','parches'],sobre:['sobre','sobres'],otro:['unidad','unidades']};
+const S={meds:new Map(),movs:[],config:{avisoDias:7,cubrirDias:30},ready:false,showInactive:false,tab:'tomas',fotos:{},marcas:{},clave:'local',quien:'',hoy:null,urgentes:0};
+const ls={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
+function call(fn,...args){return api(fn,S.clave,S.quien,...args).then(applyData)}
+function applyData(d){S.meds=new Map(d.meds.map(m=>[m.id,m]));S.movs=d.movs||[];S.config=d.config||S.config;S.hoy=d.hoy;S.ready=true;render();return d}
+function refresh(){if(!D.config)return Promise.resolve();return api('getData',S.clave).then(applyData).catch(()=>{})}
+function pad(n){return String(n).padStart(2,'0')}
+function todayISO(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function toDay(iso){const [y,m,d]=iso.split('-').map(Number);return Math.round(Date.UTC(y,m-1,d)/864e5)}
+const fromDay=n=>{const d=new Date(n*864e5);return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate())};
+const wd=iso=>new Date(toDay(iso)*864e5).toLocaleDateString('es-AR',{weekday:'short',timeZone:'UTC'}).replace('.','');
+const fmtD=iso=>{if(!iso||!/^\d{4}-\d{2}-\d{2}$/.test(iso))return iso||'—';const [y,m,d]=iso.split('-');return d+'/'+m+(y!==todayISO().slice(0,4)?'/'+y.slice(2):'')};
+const fmtDL=iso=>iso?wd(iso)+' '+fmtD(iso):'—';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function fq(n){if(n==null||isNaN(n))return '—';const r=Math.round(n*2)/2;const i=Math.floor(r);if(r-i===.5)return (i?i:'')+'½';return String(i)}
+const unidad=(m,n)=>{const u=UNIDADES[m.unidad]||UNIDADES.comprimido;return Math.abs(n)===1?u[0]:u[1]};
+function consumo(m){return MOMENTOS.reduce((s,x)=>s+(Number(m.tomas&&m.tomas[x.k])||0),0)}
+function stockAl(m,iso){const c=consumo(m);if(m.stock==null)return null;if(!c||m.alternativo||!m.stockFecha)return Number(m.stock);const d=Math.max(0,toDay(iso)-toDay(m.stockFecha));return Math.max(0,Number(m.stock)-c*d)}
+function calc(m){
+  const hoy=todayISO(),c=consumo(m),aviso=Number(S.config.avisoDias)||7,cubrir=Number(S.config.cubrirDias)||30;
+  const out={c,est:stockAl(m,hoy),estado:'neutral',restan:null,hasta:null,cajas:null,faltan:null};
+  if(m.activo===false){out.estado='inactivo';return out}
+  if(m.alternativo||!c){out.estado='demanda';return out}
+  if(m.stock==null||!m.stockFecha){out.estado='sin-datos';return out}
+  const hd=toDay(m.stockFecha)+Math.floor(Number(m.stock)/c+1e-9);
+  out.hasta=fromDay(hd);out.restan=hd-toDay(hoy);
+  out.estado=out.restan<=0?'agotado':out.restan<=aviso?'reponer':'ok';
+  out.faltan=Math.max(0,c*cubrir-out.est);
+  const pc=Number(m.porCaja)||0;
+  if(pc)out.cajas=Math.max(1,Math.ceil(out.faltan/pc));
+  out.diasDesdeRecuento=toDay(hoy)-toDay(m.stockFecha);
+  return out;
+}
+const ESTADO_TXT={agotado:'Sin stock',reponer:'Reponer',ok:'Al día',demanda:'A demanda','sin-datos':'Faltan datos',inactivo:'Ya no toma'};
+const chipClass=e=>e==='agotado'||e==='reponer'||e==='ok'?e:'neutral';
+function restanTxt(r){if(r==null)return '';if(r<0)return 'se terminó hace '+(-r)+(r===-1?' día':' días');if(r===0)return 'se termina hoy';if(r===1)return 'alcanza 1 día más';return 'alcanza '+r+' días más'}
+function show(id){['setup','app','cargando'].forEach(x=>document.getElementById(x).hidden=x!==id)}
+document.getElementById('fSetup').addEventListener('submit',async e=>{
+  e.preventDefault();const er=document.getElementById('s-err');er.textContent='';
+  const pac=document.getElementById('s-pac').value.trim();
+  if(!pac){er.textContent='Poné el nombre de quien toma los remedios.';return}
+  try{await B.setup(pac);S.config=Object.assign({},S.config,D.config);setTitle();entrar()}
+  catch(x){er.textContent=errMsg(x)}
+});
+document.getElementById('s-file').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)restaurarArchivo(f)});
+function setTitle(){const t='Medicamentos de '+(S.config.paciente||'');document.getElementById('titulo').textContent=S.config.paciente?t:'Medicamentos';document.title=S.config.paciente?t:'Medicamentos'}
+function entrar(){show('app');if(!S.ready)document.getElementById('tab-tomas').innerHTML='<div class="empty">Cargando los medicamentos…</div>';refresh().then(cargarExtras)}
+function sortedMeds(){return [...S.meds.values()].sort((a,b)=>String(a.nombre).localeCompare(String(b.nombre),'es'))}
+function render(){
+  document.getElementById('hoy').textContent=new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'});
+  setTitle();
+  if(!S.ready)return;
+  renderReponer();renderTomas();renderStock();renderHist();
+}
+function medCard(m,k,opts){
+  const est=k.est;const facts=[];const cub=S.config.cubrirDias||30;
+  if(k.hasta)facts.push('<span>Alcanza hasta <b>'+esc(fmtDL(k.hasta))+'</b></span>');
+  if(est!=null)facts.push('<span>Stock estimado <b>'+fq(est)+'</b> '+esc(unidad(m,est))+'</span>');
+  if(k.c)facts.push('<span>Usa <b>'+fq(k.c)+'</b> por día</span>');
+  if(k.cajas&&opts.compra)facts.push('<span>Comprar <b>'+k.cajas+'</b> '+(k.cajas===1?'caja':'cajas')+' para '+cub+' días</span>');
+  else if(k.faltan&&opts.compra&&!m.porCaja)facts.push('<span>Comprar <b>'+Math.ceil(k.faltan)+'</b> '+esc(unidad(m,2))+' para '+cub+' días</span>');
+  const stale=k.diasDesdeRecuento>45?'<div class="warn">El stock se contó por última vez el '+esc(fmtD(m.stockFecha))+' (hace '+k.diasDesdeRecuento+' días). Contá las cajas y tocá <b>Corregir stock</b> para que la fecha sea exacta.</div>':'';
+  const acts='<div class="actions"><button class="btn primary" data-act="compra" data-id="'+esc(m.id)+'">Registrar compra</button><button class="btn" data-act="recuento" data-id="'+esc(m.id)+'">Corregir stock</button></div>';
+  return '<article class="med '+k.estado+'"><div class="bar"></div><div class="body">'+
+    '<div class="row"><span class="name">'+esc(m.nombre)+'</span><span class="chip '+chipClass(k.estado)+'">'+esc(ESTADO_TXT[k.estado]||'')+(k.restan!=null?' · '+esc(restanTxt(k.restan)):'')+'</span></div>'+
+    '<div class="sub">'+esc([m.droga,m.dosis].filter(Boolean).join(' · '))+(m.equivalentes?' — también: '+esc(m.equivalentes):'')+'</div>'+
+    '<div class="facts">'+facts.join('')+'</div>'+stale+acts+'</div></article>';
+}
+function renderReponer(){
+  const el=document.getElementById('tab-reponer');
+  const meds=sortedMeds().filter(m=>m.activo!==false&&!m.alternativo&&consumo(m)>0);
+  if(!S.meds.size){el.innerHTML='<div class="empty"><b>Todavía no hay medicamentos cargados.</b><br>Andá a <b>Stock</b> y tocá <b>Agregar medicamento</b>.</div>';setBadge(0);S.urgentes=0;return}
+  const ks=meds.map(m=>[m,calc(m)]).sort((a,b)=>(a[1].restan??1e9)-(b[1].restan??1e9));
+  const rojo=ks.filter(x=>x[1].estado==='agotado'),ama=ks.filter(x=>x[1].estado==='reponer'),ok=ks.filter(x=>x[1].estado==='ok'),sd=ks.filter(x=>x[1].estado==='sin-datos');
+  S.urgentes=rojo.length+ama.length;setBadge(S.urgentes);
+  const cub=S.config.cubrirDias||30;
+  let h='<div class="resumen"><div class="r"><b>'+rojo.length+'</b>sin stock</div><div class="a"><b>'+ama.length+'</b>reponer en '+(S.config.avisoDias||7)+' días</div><div class="g"><b>'+ok.length+'</b>al día</div></div>';
+  const urg=rojo.concat(ama);
+  if(urg.length){h+='<h2>Para comprar</h2><div class="list">'+urg.map(([m,k])=>medCard(m,k,{compra:true})).join('')+'</div>';
+    const lines=urg.map(([m,k])=>'• '+m.nombre+(m.dosis?' '+m.dosis:'')+(m.droga?' ('+m.droga+')':'')+' — '+(k.cajas?k.cajas+(k.cajas===1?' caja':' cajas'):Math.ceil(k.faltan||0)+' '+unidad(m,2))+(m.equivalentes?' · sirve también: '+m.equivalentes:''));
+    h+='<div class="farmacia"><div class="row"><b>Lista para la farmacia</b><button class="btn" id="copiar">Copiar</button></div><pre id="listaFarm">'+esc(lines.join('\n'))+'</pre><div class="muted small">Cantidades para cubrir '+cub+' días desde hoy.</div></div>';
+  }else h+='<div class="empty">No hay nada para comprar esta semana.</div>';
+  if(sd.length)h+='<h2>Faltan datos</h2><div class="list">'+sd.map(([m,k])=>medCard(m,k,{})).join('')+'</div>';
+  if(ok.length)h+='<h2>Al día</h2><div class="list">'+ok.map(([m,k])=>medCard(m,k,{})).join('')+'</div>';
+  el.innerHTML=h;
+}
+function setBadge(n){const b=document.getElementById('badge');b.hidden=!n;b.textContent=n}
+function pillGlyphs(m,q){let h='';const full=Math.floor(q),half=q-full>=.5;const cls=m.unidad==='parche'?' patch':'';for(let i=0;i<Math.min(full,4);i++)h+='<span class="pillg'+cls+'"></span>';if(half)h+='<span class="pillg half'+cls+'"></span>';return h}
+function renderTomas(){
+  const el=document.getElementById('tab-tomas');
+  const meds=sortedMeds().filter(m=>m.activo!==false);
+  let h='';
+  if(S.urgentes)h+='<div class="warn" style="margin-bottom:12px">Hay <b>'+S.urgentes+'</b> '+(S.urgentes===1?'medicamento':'medicamentos')+' para reponer. <button class="linkbtn" data-goto="reponer">Ver la lista</button></div>';
+  if(!meds.length){el.innerHTML=h+'<div class="empty"><b>Todavía no hay medicamentos.</b><br>Andá a <b>Stock</b> y tocá <b>Agregar medicamento</b>.</div>';return}
+  h+='<div class="toolbar"><span class="muted small">Lo que toma cada día · tocá una foto para agrandarla</span><button class="btn primary" id="pdfTomas">Hoja para el médico</button></div>';
+  for(const mo of MOMENTOS){
+    const items=meds.filter(m=>!m.alternativo&&Number(m.tomas&&m.tomas[mo.k])>0);
+    if(!items.length)continue;
+    h+='<div class="momento"><h3><span>'+esc(mo.l)+'</span><span class="muted small">'+items.length+(items.length===1?' remedio':' remedios')+'</span></h3>'+
+      items.map(m=>{const q=Number(m.tomas[mo.k]);return '<div class="toma"><div><div class="pills" aria-hidden="true">'+pillGlyphs(m,q)+'</div><div class="qty">'+fq(q)+' '+esc(unidad(m,q))+'</div></div><div class="tomamain"><div><div class="name">'+esc(m.nombre)+'</div><div class="sub">'+esc([m.droga,m.dosis,m.accion].filter(Boolean).join(' · '))+'</div>'+(m.notas?'<div class="sub">'+esc(m.notas)+'</div>':'')+'</div>'+thumbs(m)+'</div></div>'}).join('')+'</div>';
+  }
+  const dem=meds.filter(m=>m.alternativo);
+  if(dem.length)h+='<div class="momento"><h3><span>A demanda (si hace falta)</span></h3>'+dem.map(m=>'<div class="toma"><div class="qty">—</div><div class="tomamain"><div><div class="name">'+esc(m.nombre)+'</div><div class="sub">'+esc([m.droga,m.dosis,m.accion].filter(Boolean).join(' · '))+(m.stock!=null?' · quedan '+fq(m.stock):'')+'</div></div>'+thumbs(m)+'</div></div>').join('')+'</div>';
+  el.innerHTML=h;
+}
+function renderStock(){
+  const el=document.getElementById('tab-stock');
+  const meds=sortedMeds().filter(m=>S.showInactive||m.activo!==false);
+  let h='<div class="toolbar"><label><input type="checkbox" id="verInact"'+(S.showInactive?' checked':'')+'> Mostrar los que ya no toma</label><span style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" data-act="config">Ajustes y copia</button><button class="btn" data-act="nuevo">Agregar medicamento</button>'+(S.meds.size?'<button class="btn primary" data-act="bulk">Cargar stock actual</button>':'')+'</span></div>';
+  if(!meds.length){el.innerHTML=h+'<div class="empty">Tocá <b>Agregar medicamento</b> para cargar el primero.</div>';return}
+  h+='<div class="tablewrap"><table><thead><tr><th>Medicamento</th><th style="text-align:right">Por día</th><th style="text-align:right">Stock est.</th><th>Alcanza hasta</th><th>Contado el</th><th></th></tr></thead><tbody>';
+  for(const m of meds){const k=calc(m);
+    h+='<tr class="'+(m.activo===false?'inactivo':'')+'"><td><b>'+esc(m.nombre)+'</b>'+(marcasDe(m).length>1?' <span class="chip neutral">'+marcasDe(m).length+' marcas</span>':'')+'<div class="sub small">'+esc([m.droga,m.dosis].filter(Boolean).join(' · '))+'</div></td>'+
+      '<td class="n">'+(k.c?fq(k.c):'—')+'</td><td class="n">'+fq(k.est)+'</td>'+
+      '<td>'+(k.hasta?'<span class="chip '+chipClass(k.estado)+'">'+esc(fmtD(k.hasta))+'</span>':'<span class="chip neutral">'+esc(ESTADO_TXT[k.estado]||'')+'</span>')+'</td>'+
+      '<td class="n" style="text-align:left">'+esc(fmtD(m.stockFecha))+'</td>'+
+      '<td><span style="display:flex;gap:4px;flex-wrap:wrap"><button class="btn" data-act="editar" data-id="'+esc(m.id)+'">Editar</button><button class="btn" data-act="marcas" data-id="'+esc(m.id)+'">Marcas y fotos</button><button class="btn" data-act="compra" data-id="'+esc(m.id)+'">+ Compra</button><button class="btn" data-act="recuento" data-id="'+esc(m.id)+'">Corregir</button></span></td></tr>';
+  }
+  h+='</tbody></table></div><p class="muted small">El stock se descuenta solo cada día según las tomas. Con <b>Editar</b> cambiás dosis, horarios, datos de la caja, o lo das de baja.</p>';
+  el.innerHTML=h;
+}
+function renderHist(){
+  const el=document.getElementById('tab-historial');
+  if(!S.movs.length){el.innerHTML='<div class="empty">Acá van a aparecer las compras y correcciones que registren.</div>';return}
+  el.innerHTML='<div>'+S.movs.map(v=>{
+    let det='';
+    if(v.tipo==='Compra')det='+'+fq(v.cantidad)+' · stock '+fq(v.stockAntes)+' → '+fq(v.stockDespues);
+    else if(v.tipo==='Corrección de stock')det='contado: '+fq(v.stockDespues)+(v.stockAntes!=null?' (estimado era '+fq(v.stockAntes)+')':'');
+    else if(v.tipo==='Alta'&&v.stockDespues!=null)det='stock inicial '+fq(v.stockDespues);
+    if(v.detalle)det=(det?det+' · ':'')+v.detalle;
+    const fh=String(v.fechaHora||'');const f=fh.slice(0,10),hh=fh.slice(11,16);
+    return '<div class="mov"><div class="f">'+esc(fmtD(f))+'<br>'+esc(hh)+'</div><div><b>'+esc(v.tipo)+'</b>'+(v.medNombre?' · '+esc(v.medNombre):'')+'<div class="sub small">'+esc(det)+(v.nota?' — '+esc(v.nota):'')+'</div>'+(v.quien||(v.fecha&&v.fecha!==f)?'<div class="sub small">'+[v.quien?'por <b>'+esc(v.quien)+'</b>':'',v.fecha&&v.fecha!==f?'fecha '+esc(fmtD(v.fecha)):''].filter(Boolean).join(' · ')+'</div>':'')+'</div></div>'}).join('')+'</div>';
+}
+const modal=document.getElementById('modal');
+function closeModal(){modal.innerHTML=''}
+function openModal(html,onSubmit,onReady){
+  modal.innerHTML='<div class="overlay" id="ov"><div class="sheet" role="dialog" aria-modal="true">'+html+'</div></div>';
+  const ov=document.getElementById('ov');
+  ov.addEventListener('click',e=>{if(e.target===ov)closeModal()});
+  const f=ov.querySelector('form');
+  ov.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',closeModal));
+  if(f&&onSubmit)f.addEventListener('submit',async e=>{e.preventDefault();const btn=f.querySelector('[type=submit]');const er=f.querySelector('.err');const t=btn.textContent;btn.disabled=true;btn.textContent='Guardando…';er.textContent='';
+    try{await onSubmit(f);closeModal()}catch(x){er.textContent=errMsg(x);btn.disabled=false;btn.textContent=t}});
+  const first=ov.querySelector('input:not([type=file]),select');if(first&&!('ontouchstart' in window))first.focus();
+  if(onReady)onReady(ov);
+}
+function errMsg(x){if(x&&x.userMsg)return x.userMsg;const m=String(x&&x.message||x||'');return m.replace(/^(Exception|Error):\s*/,'')||'No se pudo guardar. Probá de nuevo.'}
+function toast(t,ms){const d=document.createElement('div');d.className='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),ms||2200)}
+function fail(msg){const e=new Error(msg);e.userMsg=msg;return e}
+function porCajaSel(root){return Number(root.querySelector('#c-pc').value)||0}
+function marcaPorId(id){let mk=null;Object.keys(S.marcas).forEach(k=>{(S.marcas[k]||[]).forEach(x=>{if(x.id===id)mk=x})});return mk}
+function abrirCompra(m){
+  if(!marcasDe(m).length){cargarExtras().then(()=>{if(marcasDe(m).length)abrirCompra(m);else toast('No se pudieron cargar las marcas. Probá de nuevo.')});return}
+  const k=calc(m),hoy=todayISO(),act=marcaActual(m);
+  const opts=marcasDe(m).map(mk=>'<option value="'+esc(mk.id)+'"'+(act&&mk.id===act.id?' selected':'')+'>'+esc(mk.nombre)+'</option>').join('')+'<option value="__nueva">+ Otra marca…</option>';
+  openModal('<h3>Registrar compra</h3><div class="muted">'+esc([m.droga,m.dosis].filter(Boolean).join(' ')||m.nombre)+'</div>'+
+    '<form><div class="grid"><label class="full">Marca que compraste<select id="c-marca">'+opts+'</select></label>'+
+    '<label class="full" id="c-nueva" hidden>Nombre de la marca nueva<input id="c-nnom" type="text" placeholder="Ej: Lercadip 10"></label>'+
+    '<label class="full">Unidades por caja<input id="c-pc" type="number" min="1" step="1" inputmode="numeric" placeholder="¿Cuántas trae la caja?"><span class="small muted" id="c-pchint" style="font-weight:400"></span></label>'+
+    '<label>Cantidad<input id="c-cant" type="number" min="0" step="1" inputmode="numeric" value="1" required></label>'+
+    '<label>En<select id="c-uni"><option value="caja">cajas</option><option value="unidad">'+esc(unidad(m,2))+'</option></select></label>'+
+    '<label class="full">Fecha de compra<input id="c-fecha" type="date" value="'+hoy+'" max="'+hoy+'" required></label>'+
+    '<label class="full">Nota (opcional)<input id="c-nota" type="text" placeholder="Ej: farmacia"></label></div>'+
+    '<div class="preview" id="c-prev"></div><div class="err"></div><div class="formfoot"><button type="button" class="btn" data-close>Cancelar</button><button type="submit" class="btn primary">Guardar compra</button></div></form>',
+  async f=>{const g=id=>f.querySelector('#'+id);const sel=g('c-marca').value,n=Number(g('c-cant').value),u=g('c-uni').value,pc=g('c-pc').value;
+    if(!(n>0))throw fail('Poné una cantidad mayor a cero.');
+    const p={medId:m.id,fecha:g('c-fecha').value,nota:g('c-nota').value.trim(),porCaja:pc};
+    if(sel==='__nueva'){const nom=g('c-nnom').value.trim();if(!nom)throw fail('Poné el nombre de la marca nueva.');p.nueva={nombre:nom,porCaja:pc}}else p.marcaId=sel;
+    if(u==='caja'){if(!porCajaSel(f))throw fail('Poné cuántas '+unidad(m,2)+' trae la caja, o elegí cargar '+unidad(m,2)+'.');p.cajas=n}else p.unidades=n;
+    aplicarResp(await api('compraConMarca',S.clave,S.quien,p));toast('Compra guardada')},
+  ov=>{const g=id=>ov.querySelector('#'+id);
+    const cargarPc=()=>{const sel=g('c-marca').value;const mk=sel==='__nueva'?null:marcaPorId(sel);g('c-pc').value=mk&&mk.porCaja?mk.porCaja:'';
+      g('c-pchint').textContent=mk&&mk.porCaja?'Si esta caja trae otra cantidad, cambiala y queda guardada para '+mk.nombre+'.':''};
+    const upd=()=>{const sel=g('c-marca').value;g('c-nueva').hidden=sel!=='__nueva';const pc=porCajaSel(ov);const n=Number(g('c-cant').value)||0,u=g('c-uni').value,fe=g('c-fecha').value||hoy;
+      if(!pc&&u==='caja'){g('c-prev').innerHTML='Completá cuántas '+esc(unidad(m,2))+' trae la caja, o elegí cargar '+esc(unidad(m,2))+'.';return}
+      const add=u==='caja'?n*pc:n;const antes=stockAl(m,fe)??0;const t=antes+add;const c=consumo(m);
+      g('c-prev').innerHTML='Stock: '+fq(antes)+' + '+fq(add)+' = <b>'+fq(t)+'</b> '+esc(unidad(m,t))+(c&&!m.alternativo?' · alcanza hasta <b>'+esc(fmtDL(fromDay(toDay(fe)+Math.floor(t/c+1e-9))))+'</b>':'')};
+    const sug=()=>{const pc=porCajaSel(ov);if(pc&&k.faltan!=null)g('c-cant').value=Math.max(1,Math.ceil(k.faltan/pc))};
+    ov.querySelectorAll('input,select').forEach(i=>i.addEventListener('input',upd));
+    g('c-marca').addEventListener('change',()=>{cargarPc();sug();upd()});
+    cargarPc();sug();if(!porCajaSel(ov))g('c-uni').value='unidad';upd();
+  });
+}
+function abrirRecuento(m){
+  const hoy=todayISO(),est=stockAl(m,hoy);
+  openModal('<h3>Corregir stock</h3><div class="muted">'+esc(m.nombre)+' · contá lo que queda en todas las cajas abiertas y cerradas</div>'+
+    '<form><div class="grid"><label>'+esc(unidad(m,2)[0].toUpperCase()+unidad(m,2).slice(1))+' que quedan<input id="r-n" type="number" min="0" step="0.5" inputmode="decimal" placeholder="'+(est!=null?fq(est).replace('½','.5'):'')+'" required></label>'+
+    '<label>Fecha<input id="r-fecha" type="date" value="'+hoy+'" max="'+hoy+'" required></label></div>'+
+    (est!=null?'<div class="preview">El sistema estimaba <b>'+fq(est)+'</b>.</div>':'')+
+    '<div class="err"></div><div class="formfoot"><button type="button" class="btn" data-close>Cancelar</button><button type="submit" class="btn primary">Guardar stock</button></div></form>',
+  async f=>{
+    const raw=f.querySelector('#r-n').value,n=Number(raw);
+    if(raw===''||!(n>=0))throw fail('Poné cuántos quedan (puede ser 0).');
+    await call('corregirStock',{fecha:f.querySelector('#r-fecha').value,items:[{medId:m.id,stock:n}]});
+    toast('Stock corregido');
+  });
+}
+function abrirBulk(){
+  const hoy=todayISO();
+  const meds=sortedMeds().filter(m=>m.activo!==false).sort((a,b)=>(a.alternativo?1:0)-(b.alternativo?1:0)||String(a.nombre).localeCompare(String(b.nombre),'es'));
+  openModal('<h3>Cargar stock actual</h3><div class="muted">Contá cuántos quedan de cada uno (sumando cajas abiertas y cerradas) y escribilo. Los que dejes vacíos no se tocan.</div>'+
+    '<form><div class="grid"><label class="full">Fecha del conteo<input id="b-fecha" type="date" value="'+hoy+'" max="'+hoy+'" required></label></div>'+
+    '<div class="tablewrap" style="margin-top:12px"><table><thead><tr><th>Medicamento</th><th style="text-align:right">Estimado</th><th style="width:110px">Hay ahora</th></tr></thead><tbody>'+
+    meds.map(m=>{const est=stockAl(m,hoy);return '<tr><td><b>'+esc(m.nombre)+'</b><div class="sub small">'+esc(unidad(m,2))+(m.alternativo?' · a demanda':'')+'</div></td><td class="n">'+fq(est)+'</td><td><input data-mid="'+esc(m.id)+'" type="number" min="0" step="0.5" inputmode="decimal" aria-label="Stock de '+esc(m.nombre)+'"></td></tr>'}).join('')+
+    '</tbody></table></div><div class="err"></div><div class="formfoot"><button type="button" class="btn" data-close>Cancelar</button><button type="submit" class="btn primary">Guardar stock</button></div></form>',
+  async f=>{
+    const items=[...f.querySelectorAll('input[data-mid]')].filter(i=>i.value!=='');
+    if(!items.length)throw fail('No escribiste ninguna cantidad.');
+    for(const i of items){if(!(Number(i.value)>=0))throw fail('Revisá la cantidad de '+(S.meds.get(i.dataset.mid)||{}).nombre+'.')}
+    await call('corregirStock',{fecha:f.querySelector('#b-fecha').value||hoy,items:items.map(i=>({medId:i.dataset.mid,stock:Number(i.value)}))});
+    toast('Stock cargado: '+items.length+(items.length===1?' remedio':' remedios'));
+  });
+}
+function selDose(id,val){const opts=[0,.5,1,1.5,2,3];return '<select id="'+id+'">'+opts.map(o=>'<option value="'+o+'"'+(Number(val||0)===o?' selected':'')+'>'+(o?fq(o):'—')+'</option>').join('')+'</select>'}
+function abrirEditar(m){
+  const nuevo=!m;m=m||{tomas:{},unidad:'comprimido',activo:true};
+  const hoy=todayISO();
+  openModal('<h3>'+(nuevo?'Agregar medicamento':'Editar '+esc(m.nombre))+'</h3>'+
+    '<form><div class="grid">'+
+    '<label class="full">'+(nuevo?'Nombre comercial (marca)':'Marca actual')+'<input id="e-nombre" type="text" value="'+esc(m.nombre)+'" required placeholder="Ej: Pantometyl 20"'+(nuevo?'':' readonly')+'></label>'+(nuevo?'':'<div class="full small muted">La marca, las unidades por caja y las fotos se cambian en <b>Marcas y fotos</b> (en la solapa Stock).</div>')+
+    '<label>Droga<input id="e-droga" type="text" value="'+esc(m.droga)+'"></label>'+
+    '<label>Dosis<input id="e-dosis" type="text" value="'+esc(m.dosis)+'" placeholder="20 mg"></label>'+
+    '<label>Para qué<input id="e-accion" type="text" value="'+esc(m.accion)+'" placeholder="Presión, Neuro…"></label>'+
+    '<label>Forma<select id="e-unidad">'+Object.keys(UNIDADES).map(u=>'<option value="'+u+'"'+(m.unidad===u?' selected':'')+'>'+UNIDADES[u][1]+'</option>').join('')+'</select></label>'+
+    '<label>Unidades por caja<input id="e-caja" type="number" min="0" step="1" inputmode="numeric" value="'+(m.porCaja??'')+'"'+(nuevo?'':' readonly')+'></label>'+
+    '<label>'+(nuevo?'Otras marcas (separadas por coma)':'Otras marcas')+'<input id="e-equiv" type="text" value="'+esc(m.equivalentes)+'" placeholder="Opcional"'+(nuevo?'':' readonly')+'></label>'+
+    '<div class="full"><div style="font-size:.88rem;font-weight:700;color:var(--muted);margin-bottom:6px">Cuánto toma en cada momento</div><div class="tomasgrid">'+
+      MOMENTOS.map(x=>'<label>'+esc(x.l.replace(' (cambio diario)',''))+selDose('e-t-'+x.k,m.tomas&&m.tomas[x.k])+'</label>').join('')+'</div></div>'+
+    (nuevo?'<label>Stock actual<input id="e-stock" type="number" min="0" step="0.5" inputmode="decimal" value=""></label><label>Contado el<input id="e-sfecha" type="date" value="'+hoy+'" max="'+hoy+'"></label>':'')+
+    '<label class="full">Notas<input id="e-notas" type="text" value="'+esc(m.notas)+'" placeholder="Ej: con comida"></label>'+
+    '<label class="check full"><input id="e-alt" type="checkbox"'+(m.alternativo?' checked':'')+'> Solo a demanda (no se descuenta por día)</label>'+
+    '<label class="check full"><input id="e-activo" type="checkbox"'+(m.activo!==false?' checked':'')+'> Lo sigue tomando</label>'+
+    '</div><div class="err"></div><div class="formfoot">'+(nuevo?'':'<button type="button" class="btn danger left" id="e-del">Borrar</button>')+'<button type="button" class="btn" data-close>Cancelar</button><button type="submit" class="btn primary">Guardar</button></div></form>',
+  async f=>{
+    const g=id=>f.querySelector('#'+id);
+    const nombre=g('e-nombre').value.trim();if(!nombre)throw fail('Poné el nombre.');
+    const tomas={};MOMENTOS.forEach(x=>{const v=Number(g('e-t-'+x.k).value);if(v)tomas[x.k]=v});
+    const cajaV=g('e-caja').value;
+    const data={id:nuevo?null:m.id,nombre,droga:g('e-droga').value.trim(),dosis:g('e-dosis').value.trim(),accion:g('e-accion').value.trim(),unidad:g('e-unidad').value,
+      porCaja:cajaV===''?null:Number(cajaV),equivalentes:g('e-equiv').value.trim(),notas:g('e-notas').value.trim(),tomas,alternativo:g('e-alt').checked,activo:g('e-activo').checked};
+    if(nuevo){const sv=g('e-stock').value;data.stock=sv===''?null:Number(sv);data.stockFecha=g('e-sfecha').value||hoy}
+    await call('guardarMed',data);
+    if(nuevo)cargarExtras();
+    toast('Guardado');
+  },ov=>{
+    const d=ov.querySelector('#e-del');if(!d)return;let armed=false;
+    d.addEventListener('click',async()=>{if(!armed){armed=true;d.textContent='¿Seguro? Tocá de nuevo';return}
+      d.disabled=true;d.textContent='Borrando…';try{await call('borrarMed',m.id);await cargarExtras();closeModal();toast('Borrado')}catch(x){ov.querySelector('.err').textContent=errMsg(x);d.disabled=false;d.textContent='Borrar'}});
+  });
+}
+function abrirConfig(){
+  const c=S.config;const ult=D.config&&D.config.ultimaCopia;
+  const offline=(window.isSecureContext&&navigator.serviceWorker&&navigator.serviceWorker.controller)?'activo':'no disponible (hace falta HTTPS)';
+  openModal('<h3>Ajustes</h3><form><div class="grid">'+
+    '<label class="full">Nombre de quien toma los remedios<input id="g-pac" type="text" value="'+esc(c.paciente||'')+'"></label>'+
+    '<label>Avisar con cuántos días<input id="g-aviso" type="number" min="1" max="60" inputmode="numeric" value="'+(c.avisoDias||7)+'"></label>'+
+    '<label>Comprar para cuántos días<input id="g-cubrir" type="number" min="7" max="180" inputmode="numeric" value="'+(c.cubrirDias||30)+'"></label>'+
+    '</div><div class="err"></div><div class="formfoot"><button type="button" class="btn" data-close>Cancelar</button><button type="submit" class="btn primary">Guardar</button></div></form>'+
+    '<div class="mkadd"><div class="lbl">Copia de seguridad</div>'+
+    '<div class="muted small">Los datos se guardan solo en este dispositivo. Si borrás la app o cambiás de teléfono, se pierden. Exportá una copia de vez en cuando y guardala en Archivos, Drive o mandátela por mail.</div>'+
+    '<div class="small">Última copia: <b>'+(ult?esc(fmtD(ult.slice(0,10))+' '+ult.slice(11)):'nunca')+'</b></div>'+
+    '<div class="actions"><button type="button" class="btn primary" id="g-exp">Exportar mis datos</button><label class="btn fbtn" style="display:inline-block">Restaurar desde una copia<input type="file" id="g-imp" accept=".json,application/json" hidden></label></div></div>'+
+    '<p class="muted small" style="margin-top:14px">Versión '+APP_VERSION+' · Modo sin conexión: '+offline+'</p>',
+  async f=>{
+    await call('guardarAjustes',{paciente:f.querySelector('#g-pac').value.trim(),avisoDias:Number(f.querySelector('#g-aviso').value)||7,cubrirDias:Number(f.querySelector('#g-cubrir').value)||30});
+    toast('Ajustes guardados');
+  },ov=>{
+    ov.querySelector('#g-exp').addEventListener('click',e=>exportar(e.currentTarget));
+    ov.querySelector('#g-imp').addEventListener('change',e=>{const f=e.target.files&&e.target.files[0];e.target.value='';if(f)restaurarArchivo(f)});
+  });
+}
+async function exportar(btn){
+  const t=btn.textContent;btn.disabled=true;btn.textContent='Preparando…';
+  try{
+    const data=await B.exportar();const txt=JSON.stringify(data);
+    const name='Medicamentos '+(S.config.paciente||'')+' '+todayISO()+'.json';
+    const blob=new Blob([txt],{type:'application/json'});let file=null;try{file=new File([blob],name,{type:'application/json'})}catch(e){}
+    if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
+      try{await navigator.share({files:[file],title:name})}catch(e){if(e&&e.name==='AbortError')return;throw e}
+    }else{
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();
+      setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},8000);
+    }
+    toast('Copia lista');closeModal();
+  }catch(x){toast(errMsg(x),3500)}
+  finally{btn.disabled=false;btn.textContent=t}
+}
+function restaurarArchivo(file){
+  const fr=new FileReader();
+  fr.onerror=()=>toast('No se pudo leer el archivo.',3500);
+  fr.onload=async()=>{
+    let obj;try{obj=JSON.parse(fr.result)}catch(e){toast('Ese archivo no es una copia válida.',3500);return}
+    if(D.config&&!confirm('Esto REEMPLAZA todos los datos de este dispositivo por los de la copia. ¿Seguir?'))return;
+    try{
+      await B.importar(obj);
+      S.config=Object.assign({},S.config,D.config);S.ready=false;S.marcas={};S.fotos={};closeModal();setTitle();
+      toast('Datos restaurados: '+D.meds.length+' medicamentos',3000);
+      entrar();
+    }catch(x){toast(errMsg(x),4000)}
+  };
+  fr.readAsText(file);
+}
+function verHoja(){
+  const meds=sortedMeds().filter(m=>m.activo!==false);
+  const LAB={desayuno:'Desayuno',almuerzo:'Almuerzo',merienda:'Merienda',cena:'Cena',dormir:'Al dormir',parche:'Parche (cambio diario)'};
+  const td='style="padding:5px 8px;border-bottom:1px solid #ccc;text-align:left;vertical-align:top"';
+  const th='style="text-align:left;padding:5px 8px;border-bottom:2px solid #14252A;"';
+  const ahora=new Date();const fecha=pad(ahora.getDate())+'/'+pad(ahora.getMonth()+1)+'/'+ahora.getFullYear();
+  let rows='';
+  MOMENTOS.forEach(x=>{
+    const items=meds.filter(m=>!m.alternativo&&m.tomas&&m.tomas[x.k]);if(!items.length)return;
+    rows+='<tr><td colspan="5" style="background:#DCEDEF;font-weight:bold;padding:6px 8px;">'+LAB[x.k]+'</td></tr>';
+    items.forEach(m=>{const q=m.tomas[x.k];
+      rows+='<tr><td '+td+'><b>'+esc(m.nombre)+'</b></td><td '+td+'>'+esc(m.droga)+'</td><td '+td+'>'+esc(m.dosis)+'</td><td '+td+'>'+fq(q)+' '+esc(unidad(m,q))+'</td><td '+td+'>'+esc(m.accion)+(m.notas?' — '+esc(m.notas):'')+'</td></tr>'});
+  });
+  const dem=meds.filter(m=>m.alternativo);
+  const demHtml=dem.length?'<h3 style="font-size:13pt;margin:18px 0 6px;color:#14252A">A demanda (solo si hace falta)</h3><table style="width:100%;border-collapse:collapse;font-size:10.5pt;color:#14252A">'+
+    dem.map(m=>'<tr><td '+td+'><b>'+esc(m.nombre)+'</b></td><td '+td+'>'+esc(m.droga)+'</td><td '+td+'>'+esc(m.dosis)+'</td><td '+td+'>'+esc(m.accion)+'</td></tr>').join('')+'</table>':'';
+  const hoja='<div style="font-family:Arial,sans-serif;color:#14252A">'+
+    '<h2 style="font-size:16pt;margin:0 0 4px;color:#14252A">Medicación de '+esc(S.config.paciente||'')+'</h2>'+
+    '<div style="font-size:10pt;color:#566A70;margin-bottom:14px;">Tomas diarias · actualizado al '+fecha+'</div>'+
+    '<table style="width:100%;border-collapse:collapse;font-size:10.5pt;color:#14252A"><tr><th '+th+'>Medicamento</th><th '+th+'>Droga</th><th '+th+'>Dosis</th><th '+th+'>Cantidad</th><th '+th+'>Para qué / notas</th></tr>'+
+    (rows||'<tr><td colspan="5" '+td+'>No hay tomas diarias cargadas.</td></tr>')+'</table>'+demHtml+
+    '<div style="font-size:8.5pt;color:#566A70;margin-top:22px;">Generado el '+fecha+' '+pad(ahora.getHours())+':'+pad(ahora.getMinutes())+'.</div></div>';
+  openModal('<div class="noprint"><h3>Hoja para el médico</h3><div class="muted small">Para guardarla como PDF: tocá <b>Imprimir / PDF</b>. En el iPhone, en la pantalla de impresión tocá el botón de compartir (arriba) y elegí Guardar en Archivos, WhatsApp o Mail.</div></div>'+
+    '<div class="hoja">'+hoja+'</div>'+
+    '<div class="formfoot noprint"><button type="button" class="btn" data-close>Cerrar</button><button type="button" class="btn primary" id="imprimir">Imprimir / PDF</button></div>',null,
+    ov=>{ov.querySelector('#imprimir').addEventListener('click',()=>{try{window.print()}catch(e){toast('Este navegador no deja imprimir desde acá.',3000)}})});
+}
+function cargarExtras(){
+  return Promise.all([api('getFotos',S.clave).then(f=>{S.fotos=f||{}}).catch(()=>{}),api('getMarcas',S.clave).then(x=>{S.marcas=x||{}}).catch(()=>{})])
+   .then(()=>{if(S.ready){renderTomas();renderStock()}})}
+function aplicarResp(r){if(r&&r.marcas)S.marcas=r.marcas;if(r&&r.data)applyData(r.data)}
+function marcasDe(m){return S.marcas[m.id]||[]}
+function marcaActual(m){const l=marcasDe(m);return l.find(x=>x.actual)||l[0]||null}
+function fotoDe(id,t){const f=S.fotos[id];return f&&f[t]?f[t]:null}
+function thumbs(m){const mk=marcaActual(m);if(!mk)return '';const c=fotoDe(mk.id,'caja'),p=fotoDe(mk.id,'pastilla');if(!c&&!p)return '';
+  const one=(f,t)=>f?'<button type="button" class="thumb" data-fotofile="'+esc(f.file)+'" data-fototit="'+esc(mk.nombre+' · '+t)+'" aria-label="Ver foto de la '+t+' de '+esc(mk.nombre)+'"><img src="'+f.mini+'" alt=""></button>':'';
+  return '<div class="thumbs">'+one(p,'pastilla')+one(c,'caja')+'</div>'}
+function verFoto(fileId,titulo){
+  openModal('<h3>'+esc(titulo)+'</h3><div class="bigfoto" id="bigfoto"><div class="muted">Cargando foto…</div></div><div class="err"></div><div class="formfoot"><button type="button" class="btn" data-close>Cerrar</button></div>',null);
+  api('getFotoGrande',S.clave,fileId).then(src=>{const b=document.getElementById('bigfoto');if(b)b.innerHTML='<img src="'+src+'" alt="'+esc(titulo)+'">'})
+   .catch(x=>{const e=document.querySelector('#ov .err');if(e)e.textContent=errMsg(x)})}
+function achicar(file,max,q){return new Promise((res,rej)=>{const fr=new FileReader();fr.onerror=()=>rej(fail('No se pudo leer el archivo.'));
+  fr.onload=()=>{const img=new Image();img.onerror=()=>rej(fail('Ese archivo no es una imagen que se pueda leer. Probá con una foto JPG o PNG.'));
+    img.onload=()=>{let w=img.naturalWidth,h=img.naturalHeight;const k=Math.min(1,max/Math.max(w,h));w=Math.max(1,Math.round(w*k));h=Math.max(1,Math.round(h*k));
+      const cv=document.createElement('canvas');cv.width=w;cv.height=h;const ctx=cv.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);res(cv.toDataURL('image/jpeg',q))};
+    img.src=fr.result};fr.readAsDataURL(file)})}
+function slotFoto(mk,t){const f=fotoDe(mk.id,t);const lab=t==='caja'?'Caja':'Pastilla';
+  return '<div class="fslot"><div class="fimg">'+(f?'<img src="'+f.mini+'" alt="Foto de la '+t+'">':'<span>Sin foto</span>')+'</div>'+
+    '<div class="fname">'+lab+'</div><label class="btn fbtn">'+(f?'Cambiar':'Sacar / subir foto')+'<input type="file" accept="image/*" data-subir="'+t+'" data-mk="'+esc(mk.id)+'" hidden></label>'+
+    (f?'<button type="button" class="btn fbtn" data-quitar="'+t+'" data-mk="'+esc(mk.id)+'">Quitar</button>':'')+'<div class="fstat small muted"></div></div>'}
+function bindFotos(box,onChange){
+  box.addEventListener('change',async e=>{const inp=e.target.closest('[data-subir]');if(!inp||!inp.files||!inp.files[0])return;
+    const t=inp.dataset.subir,mk=inp.dataset.mk,st=inp.closest('.fslot').querySelector('.fstat');st.style.color='';st.textContent='Preparando foto…';
+    try{const grande=await achicar(inp.files[0],1000,0.8);const mini=await achicar(inp.files[0],220,0.7);st.textContent='Guardando…';
+      S.fotos=await api('subirFoto',S.clave,S.quien,{marcaId:mk,tipo:t,grande,mini})||{};onChange();toast('Foto guardada')}
+    catch(x){st.style.color='var(--red)';st.textContent=errMsg(x)}});
+  box.addEventListener('click',async e=>{const q=e.target.closest('[data-quitar]');if(!q)return;
+    if(!q.dataset.armed){q.dataset.armed='1';q.textContent='¿Seguro? Tocá de nuevo';return}
+    q.disabled=true;q.textContent='Quitando…';
+    try{S.fotos=await api('borrarFoto',S.clave,S.quien,{marcaId:q.dataset.mk,tipo:q.dataset.quitar})||{};onChange();toast('Foto quitada')}
+    catch(x){q.disabled=false;q.textContent='Quitar';toast(errMsg(x))}});
+}
+function abrirMarcas(m){
+  if(!marcasDe(m).length){cargarExtras().then(()=>{if(marcasDe(m).length)abrirMarcas(m);else toast('No se pudieron cargar las marcas. Probá de nuevo.')});return}
+  openModal('<h3>Marcas y fotos</h3><div class="muted small">'+esc([m.droga,m.dosis].filter(Boolean).join(' ')||m.nombre)+' · la marca <b>actual</b> es la que se usa para calcular las cajas y la que se ve en Tomas. El stock se cuenta en '+esc(unidad(m,2))+', así que cambiar de marca no lo modifica.</div>'+
+    '<div id="mkList"></div>'+
+    '<div class="mkadd"><div class="lbl">Agregar otra marca</div><div class="grid2"><input id="mk-nom" type="text" placeholder="Nombre, ej: Gastromax 20"><input id="mk-caja" type="number" min="1" step="1" inputmode="numeric" placeholder="Unid. por caja"></div><button type="button" class="btn" id="mk-add">Agregar marca</button></div>'+
+    '<div class="err"></div><div class="formfoot"><button type="button" class="btn" data-close>Cerrar</button></div>',null,ov=>{
+    const list=ov.querySelector('#mkList'),er=ov.querySelector('.err');
+    const draw=()=>{list.innerHTML=marcasDe(m).map(mk=>'<div class="mcard'+(mk.actual?' act':'')+'">'+
+      '<div class="row"><div><b>'+esc(mk.nombre)+'</b><div class="sub small">'+(mk.porCaja?'Caja x '+mk.porCaja+' '+esc(unidad(m,2)):'Sin unidades por caja')+'</div></div>'+
+      (mk.actual?'<span class="chip ok">Actual</span>':'<button type="button" class="btn primary" data-usar="'+esc(mk.id)+'">Usar esta</button>')+'</div>'+
+      '<div class="mkedit" hidden><div class="grid2"><input data-f="nom" type="text" value="'+esc(mk.nombre)+'" aria-label="Nombre de la marca"><input data-f="caja" type="number" min="1" step="1" inputmode="numeric" value="'+(mk.porCaja??'')+'" placeholder="Unid. por caja" aria-label="Unidades por caja"></div>'+
+      '<div class="actions"><button type="button" class="btn primary" data-guardar="'+esc(mk.id)+'">Guardar</button><button type="button" class="btn" data-cancel>Cancelar</button></div></div>'+
+      '<div class="fotoSlots">'+slotFoto(mk,'caja')+slotFoto(mk,'pastilla')+'</div>'+
+      '<div class="actions"><button type="button" class="btn" data-editmk>Editar nombre / caja</button>'+(mk.actual?'':'<button type="button" class="btn danger" data-borrar="'+esc(mk.id)+'">Borrar</button>')+'</div></div>').join('')};
+    draw();
+    const run=async(fn,arg,btn,msg)=>{er.textContent='';if(btn)btn.disabled=true;
+      try{aplicarResp(await api(fn,S.clave,S.quien,arg));if(fn==='borrarMarca')S.fotos=await api('getFotos',S.clave);draw();toast(msg);return true}catch(x){er.textContent=errMsg(x);if(btn)btn.disabled=false;return false}};
+    ov.addEventListener('click',e=>{const t=e.target;
+      const u=t.closest('[data-usar]');if(u){run('usarMarca',{marcaId:u.dataset.usar},u,'Marca cambiada');return}
+      if(t.closest('[data-editmk]')){t.closest('.mcard').querySelector('.mkedit').hidden=false;return}
+      if(t.closest('[data-cancel]')){t.closest('.mkedit').hidden=true;return}
+      const g=t.closest('[data-guardar]');if(g){const c=g.closest('.mcard');run('guardarMarca',{marcaId:g.dataset.guardar,medId:m.id,nombre:c.querySelector('[data-f=nom]').value,porCaja:c.querySelector('[data-f=caja]').value},g,'Marca guardada');return}
+      const b=t.closest('[data-borrar]');if(b){if(!b.dataset.armed){b.dataset.armed='1';b.textContent='¿Seguro? Tocá de nuevo';return}run('borrarMarca',{marcaId:b.dataset.borrar},b,'Marca borrada');return}
+      if(t.id==='mk-add'){const n=ov.querySelector('#mk-nom'),cj=ov.querySelector('#mk-caja');run('guardarMarca',{medId:m.id,nombre:n.value,porCaja:cj.value},t,'Marca agregada').then(ok=>{t.disabled=false;if(ok){n.value='';cj.value=''}});return}
+    });
+    bindFotos(list,()=>{draw();renderTomas();renderStock()});
+  });
+}
+function setTab(t){S.tab=t;document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.tab===t)));
+  document.querySelectorAll('section[id^=tab-]').forEach(s=>s.hidden=s.id!=='tab-'+t);ls.set('medtab',t);window.scrollTo(0,0)}
+document.querySelector('nav').addEventListener('click',e=>{const b=e.target.closest('button[data-tab]');if(b)setTab(b.dataset.tab)});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');
+  if(b){const m=S.meds.get(b.dataset.id),a=b.dataset.act;
+    if(a==='compra'&&m)abrirCompra(m);else if(a==='recuento'&&m)abrirRecuento(m);else if(a==='editar'&&m)abrirEditar(m);else if(a==='marcas'&&m)abrirMarcas(m);else if(a==='nuevo')abrirEditar(null);else if(a==='bulk')abrirBulk();else if(a==='config')abrirConfig();
+    return}
+  const go=e.target.closest('[data-goto]');if(go){setTab(go.dataset.goto);return}
+  if(e.target.id==='pdfTomas'){verHoja();return}
+  const fi=e.target.closest('[data-fotofile]');if(fi){verFoto(fi.dataset.fotofile,fi.dataset.fototit);return}
+  if(e.target.id==='copiar'){const t=document.getElementById('listaFarm').textContent;
+    if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(t).then(()=>toast('Lista copiada'),()=>selectText());else selectText()}
+});
+function selectText(){const r=document.createRange();r.selectNodeContents(document.getElementById('listaFarm'));const s=getSelection();s.removeAllRanges();s.addRange(r);
+  let ok=false;try{ok=document.execCommand('copy')}catch(x){}toast(ok?'Lista copiada':'Texto seleccionado: copialo')}
+document.addEventListener('change',e=>{if(e.target.id==='verInact'){S.showInactive=e.target.checked;renderStock()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.innerHTML)closeModal()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!modal.innerHTML&&S.ready)refresh()});
+{const t=ls.get('medtab');if(t&&document.getElementById('tab-'+t))setTab(t)}
+render();
+
+/* ===== Arranque ===== */
+if('serviceWorker' in navigator&&window.isSecureContext){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+(async()=>{
+  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{})}catch(e){}
+  try{await cargarDB()}
+  catch(e){show('cargando');document.getElementById('cargando').innerHTML='No se pudo abrir el almacenamiento de este dispositivo.<br><span class="small">'+esc(e&&e.message||e)+'</span>';return}
+  if(!D.config){show('setup');return}
+  S.config=Object.assign({},S.config,D.config);setTitle();
+  entrar();
+})();
+})();
+</script>
+</body></html>

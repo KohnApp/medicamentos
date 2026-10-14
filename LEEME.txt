@@ -1,0 +1,59 @@
+MEDICAMENTOS — versión PWA 1.1.0
+================================
+
+Qué hay en esta carpeta
+-----------------------
+index.html      La app completa (pantallas + lógica + base de datos local).
+manifest.json   Nombre, ícono y colores para "Agregar a inicio".
+sw.js           Permite abrir sin conexión (solo funciona con HTTPS).
+icons/          Íconos de la app.
+extras/ExportarParaPWA.gs   OPCIONAL: pasa los datos reales de la planilla de Google a la app.
+
+Los datos NO están en esta carpeta: cada teléfono guarda los suyos adentro (IndexedDB).
+Actualizar estos archivos en la Pi no borra los datos de nadie.
+
+
+1) Subir a la Raspberry Pi
+--------------------------
+a) Copiar la carpeta "medicamentos" al recurso compartido de la Pi desde Windows:
+     \\192.168.1.25\ssd
+b) Por SSH en la Pi, ver dónde está la raíz web de Apache (donde viven proveedores y ventas):
+     grep -ri DocumentRoot /etc/apache2/sites-enabled/
+c) Copiarla ahí (reemplazar RAIZ por la ruta que mostró el paso b):
+     sudo cp -r /mnt/ssd/medicamentos RAIZ/
+     sudo chown -R www-data:www-data RAIZ/medicamentos
+d) Probar desde la PC:  http://192.168.1.25/medicamentos/
+
+
+2) Instalar en el iPhone / iPad
+-------------------------------
+a) Con WireGuard activo (o en la red de la oficina), abrir en SAFARI:
+     http://192.168.1.25/medicamentos/
+b) Botón Compartir → "Agregar a inicio" → Agregar.
+c) Abrir la app DESDE EL ÍCONO y recién ahí cargar datos.
+   (Safari y la app instalada guardan los datos por separado.)
+
+
+3) Prueba sugerida
+------------------
+- Primera pantalla: nombre de quien toma los remedios y quiénes la usan.
+- Stock → Agregar medicamento (2 o 3).
+- Reponer → Registrar compra.  Stock → Marcas y fotos → sacar una foto.
+- Tomas → Hoja para el médico → Imprimir / PDF.
+- Stock → Ajustes y copia → Exportar mis datos (guardar en Archivos).
+- Cerrar la app del todo y volver a abrirla: los datos tienen que seguir ahí.
+- En el iPad: instalar igual y "Restaurar desde una copia" con ese archivo.
+
+
+4) Sin HTTPS (cómo está ahora)
+------------------------------
+Funciona todo, guarda en el teléfono, pero para ABRIR la app necesita llegar a la Pi
+(WireGuard o red de la oficina). Para que abra sin conexión hace falta HTTPS (paso siguiente).
+
+
+5) Publicar una versión nueva más adelante
+------------------------------------------
+Reemplazar los archivos en la Pi y cambiar el número en sw.js (VERSION) y en index.html
+(APP_VERSION). Los teléfonos toman la versión nueva la segunda vez que abren la app.
+Si algún día cambia la estructura de los datos, la conversión va en la función migrar()
+de index.html.
