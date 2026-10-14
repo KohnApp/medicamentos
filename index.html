@@ -152,7 +152,7 @@ input[readonly]{opacity:.75}
 <script>
 (function(){
 'use strict';
-const APP_VERSION='1.1.0';
+const APP_VERSION='1.2.0';
 const SCHEMA=1;
 
 /* =====================================================================
@@ -740,32 +740,75 @@ function restaurarArchivo(file){
   };
   fr.readAsText(file);
 }
-function verHoja(){
+/* ---- Hoja para el médico: la app arma el PDF y lo comparte (en iPhone, imprimir no funciona dentro de una app instalada) ---- */
+let libsPdf=null;
+function cargarScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(fail('No se pudo cargar el generador de PDF. Abrí la app una vez con internet.'));document.head.appendChild(s)})}
+function cargarPdfLibs(){return libsPdf||(libsPdf=cargarScript('jspdf.min.js').then(()=>cargarScript('jspdf-autotable.min.js')).catch(e=>{libsPdf=null;throw e}))}
+function datosHoja(){
   const meds=sortedMeds().filter(m=>m.activo!==false);
   const LAB={desayuno:'Desayuno',almuerzo:'Almuerzo',merienda:'Merienda',cena:'Cena',dormir:'Al dormir',parche:'Parche (cambio diario)'};
+  const ahora=new Date();const fecha=pad(ahora.getDate())+'/'+pad(ahora.getMonth()+1)+'/'+ahora.getFullYear();
+  const grupos=[];
+  MOMENTOS.forEach(x=>{const items=meds.filter(m=>!m.alternativo&&m.tomas&&m.tomas[x.k]);
+    if(items.length)grupos.push({titulo:LAB[x.k],filas:items.map(m=>{const q=m.tomas[x.k];return [m.nombre,m.droga||'',m.dosis||'',fq(q)+' '+unidad(m,q),[m.accion,m.notas].filter(Boolean).join(' - ')]})})});
+  const dem=meds.filter(m=>m.alternativo).map(m=>[m.nombre,m.droga||'',m.dosis||'',m.accion||'']);
+  return{paciente:S.config.paciente||'',fecha,hora:pad(ahora.getHours())+':'+pad(ahora.getMinutes()),grupos,dem};
+}
+function htmlHoja(h){
   const td='style="padding:5px 8px;border-bottom:1px solid #ccc;text-align:left;vertical-align:top"';
   const th='style="text-align:left;padding:5px 8px;border-bottom:2px solid #14252A;"';
-  const ahora=new Date();const fecha=pad(ahora.getDate())+'/'+pad(ahora.getMonth()+1)+'/'+ahora.getFullYear();
   let rows='';
-  MOMENTOS.forEach(x=>{
-    const items=meds.filter(m=>!m.alternativo&&m.tomas&&m.tomas[x.k]);if(!items.length)return;
-    rows+='<tr><td colspan="5" style="background:#DCEDEF;font-weight:bold;padding:6px 8px;">'+LAB[x.k]+'</td></tr>';
-    items.forEach(m=>{const q=m.tomas[x.k];
-      rows+='<tr><td '+td+'><b>'+esc(m.nombre)+'</b></td><td '+td+'>'+esc(m.droga)+'</td><td '+td+'>'+esc(m.dosis)+'</td><td '+td+'>'+fq(q)+' '+esc(unidad(m,q))+'</td><td '+td+'>'+esc(m.accion)+(m.notas?' — '+esc(m.notas):'')+'</td></tr>'});
-  });
-  const dem=meds.filter(m=>m.alternativo);
-  const demHtml=dem.length?'<h3 style="font-size:13pt;margin:18px 0 6px;color:#14252A">A demanda (solo si hace falta)</h3><table style="width:100%;border-collapse:collapse;font-size:10.5pt;color:#14252A">'+
-    dem.map(m=>'<tr><td '+td+'><b>'+esc(m.nombre)+'</b></td><td '+td+'>'+esc(m.droga)+'</td><td '+td+'>'+esc(m.dosis)+'</td><td '+td+'>'+esc(m.accion)+'</td></tr>').join('')+'</table>':'';
-  const hoja='<div style="font-family:Arial,sans-serif;color:#14252A">'+
-    '<h2 style="font-size:16pt;margin:0 0 4px;color:#14252A">Medicación de '+esc(S.config.paciente||'')+'</h2>'+
-    '<div style="font-size:10pt;color:#566A70;margin-bottom:14px;">Tomas diarias · actualizado al '+fecha+'</div>'+
+  h.grupos.forEach(g=>{rows+='<tr><td colspan="5" style="background:#DCEDEF;font-weight:bold;padding:6px 8px;">'+esc(g.titulo)+'</td></tr>'+
+    g.filas.map(f=>'<tr><td '+td+'><b>'+esc(f[0])+'</b></td><td '+td+'>'+esc(f[1])+'</td><td '+td+'>'+esc(f[2])+'</td><td '+td+'>'+esc(f[3])+'</td><td '+td+'>'+esc(f[4])+'</td></tr>').join('')});
+  const demHtml=h.dem.length?'<h3 style="font-size:13pt;margin:18px 0 6px;color:#14252A">A demanda (solo si hace falta)</h3><table style="width:100%;border-collapse:collapse;font-size:10.5pt;color:#14252A">'+
+    h.dem.map(f=>'<tr><td '+td+'><b>'+esc(f[0])+'</b></td><td '+td+'>'+esc(f[1])+'</td><td '+td+'>'+esc(f[2])+'</td><td '+td+'>'+esc(f[3])+'</td></tr>').join('')+'</table>':'';
+  return '<div style="font-family:Arial,sans-serif;color:#14252A">'+
+    '<h2 style="font-size:16pt;margin:0 0 4px;color:#14252A">Medicación de '+esc(h.paciente)+'</h2>'+
+    '<div style="font-size:10pt;color:#566A70;margin-bottom:14px;">Tomas diarias · actualizado al '+h.fecha+'</div>'+
     '<table style="width:100%;border-collapse:collapse;font-size:10.5pt;color:#14252A"><tr><th '+th+'>Medicamento</th><th '+th+'>Droga</th><th '+th+'>Dosis</th><th '+th+'>Cantidad</th><th '+th+'>Para qué / notas</th></tr>'+
     (rows||'<tr><td colspan="5" '+td+'>No hay tomas diarias cargadas.</td></tr>')+'</table>'+demHtml+
-    '<div style="font-size:8.5pt;color:#566A70;margin-top:22px;">Generado el '+fecha+' '+pad(ahora.getHours())+':'+pad(ahora.getMinutes())+'.</div></div>';
-  openModal('<div class="noprint"><h3>Hoja para el médico</h3><div class="muted small">Para guardarla como PDF: tocá <b>Imprimir / PDF</b>. En el iPhone, en la pantalla de impresión tocá el botón de compartir (arriba) y elegí Guardar en Archivos, WhatsApp o Mail.</div></div>'+
-    '<div class="hoja">'+hoja+'</div>'+
-    '<div class="formfoot noprint"><button type="button" class="btn" data-close>Cerrar</button><button type="button" class="btn primary" id="imprimir">Imprimir / PDF</button></div>',null,
-    ov=>{ov.querySelector('#imprimir').addEventListener('click',()=>{try{window.print()}catch(e){toast('Este navegador no deja imprimir desde acá.',3000)}})});
+    '<div style="font-size:8.5pt;color:#566A70;margin-top:22px;">Generado el '+h.fecha+' '+h.hora+'.</div></div>';
+}
+function pdfHoja(h){
+  const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:'mm',format:'a4'});
+  const limpio=s=>String(s??'').replace(/[—–]/g,'-');
+  const INK=[20,37,42],MUTED=[86,106,112],SOFT=[220,237,239];
+  doc.setTextColor(...INK);doc.setFont('helvetica','bold');doc.setFontSize(16);doc.text(limpio('Medicación de '+h.paciente),14,18);
+  doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(...MUTED);doc.text('Tomas diarias - actualizado al '+h.fecha,14,24);
+  const body=[];
+  h.grupos.forEach(g=>{body.push([{content:limpio(g.titulo),colSpan:5,styles:{fillColor:SOFT,fontStyle:'bold'}}]);g.filas.forEach(f=>body.push(f.map(limpio)))});
+  if(!body.length)body.push([{content:'No hay tomas diarias cargadas.',colSpan:5}]);
+  const base={theme:'plain',styles:{font:'helvetica',fontSize:10,textColor:INK,cellPadding:2,lineColor:[204,204,204],lineWidth:{bottom:0.2}},
+    headStyles:{fontStyle:'bold',lineColor:INK,lineWidth:{bottom:0.6}},margin:{left:14,right:14},
+    didParseCell:d=>{if(d.section==='body'&&d.column.index===0)d.cell.styles.fontStyle='bold'}};
+  doc.autoTable(Object.assign({},base,{startY:30,head:[['Medicamento','Droga','Dosis','Cantidad','Para qué / notas']],body:body}));
+  let y=doc.lastAutoTable.finalY+10;
+  if(h.dem.length){
+    if(y>260){doc.addPage();y=20}
+    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(...INK);doc.text('A demanda (solo si hace falta)',14,y);
+    doc.autoTable(Object.assign({},base,{startY:y+3,head:[['Medicamento','Droga','Dosis','Para qué']],body:h.dem.map(f=>f.map(limpio))}));
+    y=doc.lastAutoTable.finalY+10;
+  }
+  if(y>280){doc.addPage();y=20}
+  doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(...MUTED);doc.text('Generado el '+h.fecha+' '+h.hora+'.',14,y);
+  return doc.output('blob');
+}
+function verHoja(){
+  const h=datosHoja();
+  const nombre='Medicacion '+(h.paciente||'')+' '+todayISO()+'.pdf';
+  let file=null,blob=null;
+  openModal('<h3>Hoja para el médico</h3><div class="muted small">Tocá <b>Compartir PDF</b> para mandarla por WhatsApp o Mail, o guardarla en Archivos.</div>'+
+    '<div class="hoja">'+htmlHoja(h)+'</div><div class="err"></div>'+
+    '<div class="formfoot"><button type="button" class="btn" data-close>Cerrar</button><button type="button" class="btn" id="pdf-down" disabled>Abrir PDF</button><button type="button" class="btn primary" id="pdf-share" disabled>Preparando PDF…</button></div>',null,
+    ov=>{
+      const bs=ov.querySelector('#pdf-share'),bd=ov.querySelector('#pdf-down'),er=ov.querySelector('.err');
+      cargarPdfLibs().then(()=>{blob=pdfHoja(h);try{file=new File([blob],nombre,{type:'application/pdf'})}catch(e){}
+        const puede=!!(file&&navigator.canShare&&navigator.canShare({files:[file]}));
+        bs.textContent='Compartir PDF';bs.disabled=!puede;if(!puede)bs.hidden=true;bd.disabled=false;if(!puede)bd.classList.add('primary')})
+      .catch(x=>{bs.textContent='Compartir PDF';er.textContent=errMsg(x)});
+      bs.addEventListener('click',()=>{if(!file)return;navigator.share({files:[file],title:nombre}).catch(e=>{if(e&&e.name!=='AbortError')er.textContent='No se pudo compartir. Probá con Abrir PDF.'})});
+      bd.addEventListener('click',()=>{if(!blob)return;const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=nombre;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},60000)});
+    });
 }
 function cargarExtras(){
   return Promise.all([api('getFotos',S.clave).then(f=>{S.fotos=f||{}}).catch(()=>{}),api('getMarcas',S.clave).then(x=>{S.marcas=x||{}}).catch(()=>{})])
