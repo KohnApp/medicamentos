@@ -2,7 +2,7 @@
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Medicamentos</title>
-<meta name="theme-color" content="#0D6672">
+<meta name="theme-color" content="#0E6B5C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Medicamentos">
@@ -12,8 +12,18 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
-:root{--bg:#EDF1F2;--surface:#FFFFFF;--ink:#14252A;--muted:#566A70;--line:#D2DCDF;--accent:#0D6672;--accent-ink:#FFFFFF;--accent-soft:#DCEDEF;--red:#B42318;--red-bg:#FCEAE8;--amber:#8F5600;--amber-bg:#FFF1D1;--green:#1B6E45;--green-bg:#E2F2E9;--pill:#F4F7F7;--shadow:0 1px 2px rgba(20,37,42,.06);--f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--f-num:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
-@media (prefers-color-scheme:dark){:root{--bg:#0F1A1D;--surface:#172529;--ink:#E4ECEE;--muted:#93A6AB;--line:#2A3B40;--accent:#5CC3CF;--accent-ink:#0B1A1D;--accent-soft:#1B3A3F;--red:#FF8A7E;--red-bg:#3A1C1A;--amber:#F2BE5C;--amber-bg:#3A2D12;--green:#6CD39C;--green-bg:#143023;--pill:#1E2F33;--shadow:none;color-scheme:dark}}
+/* ==== REGLA DE VERSIONES (acordada con Danny) ====
+   En cada versión nueva se cambia LEVEMENTE el color de acento, para que al abrir la app
+   se note la actualización de un vistazo, sin mirar el número de versión.
+   - Cambiar: --accent y --accent-soft (claro y oscuro), <meta name="theme-color"> y theme_color en manifest.json.
+   - Cambios sutiles (un tono vecino), nunca un color de golpe. Se puede ir y volver entre tonos.
+   - Subir también APP_VERSION (acá) y VERSION en sw.js.
+   Historial de colores:
+     1.0.0 - 1.2.0  #0D6672  azul petróleo
+     1.3.0          #0E6B5C  verde petróleo
+*/
+:root{--bg:#EDF1F2;--surface:#FFFFFF;--ink:#14252A;--muted:#566A70;--line:#D2DCDF;--accent:#0E6B5C;--accent-ink:#FFFFFF;--accent-soft:#DCEFEA;--red:#B42318;--red-bg:#FCEAE8;--amber:#8F5600;--amber-bg:#FFF1D1;--green:#1B6E45;--green-bg:#E2F2E9;--pill:#F4F7F7;--shadow:0 1px 2px rgba(20,37,42,.06);--f-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--f-num:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+@media (prefers-color-scheme:dark){:root{--bg:#0F1A1D;--surface:#172529;--ink:#E4ECEE;--muted:#93A6AB;--line:#2A3B40;--accent:#5CC9B5;--accent-ink:#0B1A1D;--accent-soft:#1B3D36;--red:#FF8A7E;--red-bg:#3A1C1A;--amber:#F2BE5C;--amber-bg:#3A2D12;--green:#6CD39C;--green-bg:#143023;--pill:#1E2F33;--shadow:none;color-scheme:dark}}
 *{box-sizing:border-box}[hidden]{display:none!important}html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%}
 .wrap{max-width:780px;margin:0 auto;padding-inline:16px;padding-top:20px;padding-bottom:calc(48px + env(safe-area-inset-bottom))}
@@ -71,7 +81,7 @@ td.n{font-family:var(--f-num);text-align:right;white-space:nowrap}tr:last-child 
 form .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px;margin-top:12px}form .full{grid-column:1/-1}
 form label,.loginbox label{display:flex;flex-direction:column;gap:4px;font-size:.88rem;font-weight:700;color:var(--muted)}
 form label.check{flex-direction:row;align-items:center;gap:8px;color:var(--ink);font-weight:400}
-input,select{font:inherit;font-size:1rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:8px 10px;width:100%;min-width:0}
+input,select,textarea{font:inherit;font-size:1rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:8px 10px;width:100%;min-width:0}
 input[type=checkbox]{width:20px;height:20px}
 .tomasgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .formfoot{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:16px}.formfoot .left{margin-right:auto}
@@ -152,7 +162,7 @@ input[readonly]{opacity:.75}
 <script>
 (function(){
 'use strict';
-const APP_VERSION='1.2.0';
+const APP_VERSION='1.3.0';
 const SCHEMA=1;
 
 /* =====================================================================
@@ -221,7 +231,7 @@ function logMov_(o){
 function findMed_(id){const m=D.meds.find(x=>x.id===id);if(!m)throw fail('No encontré ese medicamento.');return m}
 function payload_(){
   const c=D.config||{};
-  return{config:{paciente:c.paciente,avisoDias:c.avisoDias,cubrirDias:c.cubrirDias},
+  return{config:{paciente:c.paciente,avisoDias:c.avisoDias,cubrirDias:c.cubrirDias,persona:Object.assign({},c.persona||{})},
     meds:clone(D.meds),movs:clone(D.movs.slice(-200).reverse()),hoy:hoy_()};
 }
 const fq_=fq;
@@ -316,6 +326,7 @@ const B={
     const c=D.config;
     c.paciente=String(p.paciente||c.paciente).trim()||c.paciente;
     c.avisoDias=Number(p.avisoDias)||7;c.cubrirDias=Number(p.cubrirDias)||30;
+    if(p.persona){const per={};['nombre','nacimiento','sexo','documento','sangre','condiciones'].forEach(k=>{const v=String(p.persona[k]||'').trim();if(v)per[k]=v});c.persona=per}
     logMov_({quien:quien_(quien),tipo:'Ajustes',fecha:hoy_(),detalle:'Aviso '+c.avisoDias+' días · compra para '+c.cubrirDias+' días'});
     return guardar(['config','movs']).then(payload_);
   },
@@ -424,7 +435,8 @@ const B={
     if(!obj||obj.app!=='medicamentos-pwa'||!Array.isArray(obj.meds)||!obj.config)throw fail('Ese archivo no es una copia de esta app.');
     const c=obj.config;
     const config={paciente:String(c.paciente||'').trim()||'Yo',
-      avisoDias:Number(c.avisoDias)||7,cubrirDias:Number(c.cubrirDias)||30,creado:c.creado||ahora_(),ultimaCopia:c.ultimaCopia||null};
+      avisoDias:Number(c.avisoDias)||7,cubrirDias:Number(c.cubrirDias)||30,creado:c.creado||ahora_(),ultimaCopia:c.ultimaCopia||null,
+      persona:c.persona&&typeof c.persona==='object'?c.persona:{}};
     const o={config:config,meds:obj.meds,movs:Array.isArray(obj.movs)?obj.movs:[],marcas:Array.isArray(obj.marcas)?obj.marcas:[],
       fotos:obj.fotos&&typeof obj.fotos==='object'?obj.fotos:{},schema:obj.formato||SCHEMA};
     const gr=obj.grandes||{};Object.keys(gr).forEach(id=>{o['foto:'+id]=gr[id]});
@@ -689,12 +701,19 @@ function abrirEditar(m){
   });
 }
 function abrirConfig(){
-  const c=S.config;const ult=D.config&&D.config.ultimaCopia;
+  const c=S.config;const ult=D.config&&D.config.ultimaCopia;const per=c.persona||{};
   const offline=(window.isSecureContext&&navigator.serviceWorker&&navigator.serviceWorker.controller)?'activo':'no disponible (hace falta HTTPS)';
   openModal('<h3>Ajustes</h3><form><div class="grid">'+
     '<label class="full">Nombre de quien toma los remedios<input id="g-pac" type="text" value="'+esc(c.paciente||'')+'"></label>'+
     '<label>Avisar con cuántos días<input id="g-aviso" type="number" min="1" max="60" inputmode="numeric" value="'+(c.avisoDias||7)+'"></label>'+
     '<label>Comprar para cuántos días<input id="g-cubrir" type="number" min="7" max="180" inputmode="numeric" value="'+(c.cubrirDias||30)+'"></label>'+
+    '<div class="full" style="border-top:1px solid var(--line);margin-top:6px;padding-top:12px"><div class="lbl">Datos de la persona (opcionales)</div><div class="muted small">Para una emergencia. Aparecen en la Hoja para el médico solo si elegís <b>Datos completos</b>. Quedan solo en este dispositivo.</div></div>'+
+    '<label class="full">Nombre completo<input id="p-nombre" type="text" autocomplete="off" value="'+esc(per.nombre)+'"></label>'+
+    '<label>Fecha de nacimiento<input id="p-nac" type="date" value="'+esc(per.nacimiento)+'" max="'+todayISO()+'"></label>'+
+    '<label>Sexo<select id="p-sexo">'+SEXOS.map(x=>'<option value="'+x+'"'+((per.sexo||'')===x?' selected':'')+'>'+(x||'—')+'</option>').join('')+'</select></label>'+
+    '<label>Documento<input id="p-doc" type="text" inputmode="numeric" autocomplete="off" value="'+esc(per.documento)+'"></label>'+
+    '<label>Grupo sanguíneo<select id="p-sangre">'+GRUPOS.map(x=>'<option value="'+x+'"'+((per.sangre||'')===x?' selected':'')+'>'+(x||'—')+'</option>').join('')+'</select></label>'+
+    '<label class="full">Enfermedades o condiciones<textarea id="p-cond" rows="3" placeholder="Ej: diabético, hipertenso, alérgico a la penicilina">'+esc(per.condiciones)+'</textarea></label>'+
     '</div><div class="err"></div><div class="formfoot"><button type="button" class="btn" data-close>Cancelar</button><button type="submit" class="btn primary">Guardar</button></div></form>'+
     '<div class="mkadd"><div class="lbl">Copia de seguridad</div>'+
     '<div class="muted small">Los datos se guardan solo en este dispositivo. Si borrás la app o cambiás de teléfono, se pierden. Exportá una copia de vez en cuando y guardala en Archivos, Drive o mandátela por mail.</div>'+
@@ -702,7 +721,8 @@ function abrirConfig(){
     '<div class="actions"><button type="button" class="btn primary" id="g-exp">Exportar mis datos</button><label class="btn fbtn" style="display:inline-block">Restaurar desde una copia<input type="file" id="g-imp" accept=".json,application/json" hidden></label></div></div>'+
     '<p class="muted small" style="margin-top:14px">Versión '+APP_VERSION+' · Modo sin conexión: '+offline+'</p>',
   async f=>{
-    await call('guardarAjustes',{paciente:f.querySelector('#g-pac').value.trim(),avisoDias:Number(f.querySelector('#g-aviso').value)||7,cubrirDias:Number(f.querySelector('#g-cubrir').value)||30});
+    const g=id=>f.querySelector('#'+id).value;
+    await call('guardarAjustes',{persona:{nombre:g('p-nombre'),nacimiento:g('p-nac'),sexo:g('p-sexo'),documento:g('p-doc'),sangre:g('p-sangre'),condiciones:g('p-cond')},paciente:f.querySelector('#g-pac').value.trim(),avisoDias:Number(f.querySelector('#g-aviso').value)||7,cubrirDias:Number(f.querySelector('#g-cubrir').value)||30});
     toast('Ajustes guardados');
   },ov=>{
     ov.querySelector('#g-exp').addEventListener('click',e=>exportar(e.currentTarget));
@@ -744,6 +764,19 @@ function restaurarArchivo(file){
 let libsPdf=null;
 function cargarScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(fail('No se pudo cargar el generador de PDF. Abrí la app una vez con internet.'));document.head.appendChild(s)})}
 function cargarPdfLibs(){return libsPdf||(libsPdf=cargarScript('jspdf.min.js').then(()=>cargarScript('jspdf-autotable.min.js')).catch(e=>{libsPdf=null;throw e}))}
+const SEXOS=['','Femenino','Masculino','Otro'];
+const GRUPOS=['','0+','0-','A+','A-','B+','B-','AB+','AB-'];
+function edadDe(iso){if(!iso||!/^\d{4}-\d{2}-\d{2}$/.test(iso))return null;const [y,m,d]=iso.split('-').map(Number);const h=new Date();let e=h.getFullYear()-y;if(h.getMonth()+1<m||(h.getMonth()+1===m&&h.getDate()<d))e--;return e>=0&&e<130?e:null}
+function filasPersona(p){
+  p=p||{};const out=[];
+  if(p.nombre)out.push(['Nombre completo',p.nombre]);
+  if(p.nacimiento){const e=edadDe(p.nacimiento);const [y,m,d]=p.nacimiento.split('-');out.push(['Fecha de nacimiento',d+'/'+m+'/'+y+(e!=null?' ('+e+' años)':'')])}
+  if(p.sexo)out.push(['Sexo',p.sexo]);
+  if(p.documento)out.push(['Documento',p.documento]);
+  if(p.sangre)out.push(['Grupo sanguíneo',p.sangre]);
+  if(p.condiciones)out.push(['Enfermedades / condiciones',p.condiciones]);
+  return out;
+}
 function datosHoja(){
   const meds=sortedMeds().filter(m=>m.activo!==false);
   const LAB={desayuno:'Desayuno',almuerzo:'Almuerzo',merienda:'Merienda',cena:'Cena',dormir:'Al dormir',parche:'Parche (cambio diario)'};
@@ -752,37 +785,47 @@ function datosHoja(){
   MOMENTOS.forEach(x=>{const items=meds.filter(m=>!m.alternativo&&m.tomas&&m.tomas[x.k]);
     if(items.length)grupos.push({titulo:LAB[x.k],filas:items.map(m=>{const q=m.tomas[x.k];return [m.nombre,m.droga||'',m.dosis||'',fq(q)+' '+unidad(m,q),[m.accion,m.notas].filter(Boolean).join(' - ')]})})});
   const dem=meds.filter(m=>m.alternativo).map(m=>[m.nombre,m.droga||'',m.dosis||'',m.accion||'']);
-  return{paciente:S.config.paciente||'',fecha,hora:pad(ahora.getHours())+':'+pad(ahora.getMinutes()),grupos,dem};
+  return{paciente:S.config.paciente||'',persona:filasPersona(S.config.persona),fecha,hora:pad(ahora.getHours())+':'+pad(ahora.getMinutes()),grupos,dem};
 }
-function htmlHoja(h){
+function htmlHoja(h,completo){
   const td='style="padding:5px 8px;border-bottom:1px solid #ccc;text-align:left;vertical-align:top"';
   const th='style="text-align:left;padding:5px 8px;border-bottom:2px solid #14252A;"';
   let rows='';
-  h.grupos.forEach(g=>{rows+='<tr><td colspan="5" style="background:#DCEDEF;font-weight:bold;padding:6px 8px;">'+esc(g.titulo)+'</td></tr>'+
+  h.grupos.forEach(g=>{rows+='<tr><td colspan="5" style="background:#DCEFEA;font-weight:bold;padding:6px 8px;">'+esc(g.titulo)+'</td></tr>'+
     g.filas.map(f=>'<tr><td '+td+'><b>'+esc(f[0])+'</b></td><td '+td+'>'+esc(f[1])+'</td><td '+td+'>'+esc(f[2])+'</td><td '+td+'>'+esc(f[3])+'</td><td '+td+'>'+esc(f[4])+'</td></tr>').join('')});
   const demHtml=h.dem.length?'<h3 style="font-size:13pt;margin:18px 0 6px;color:#14252A">A demanda (solo si hace falta)</h3><table style="width:100%;border-collapse:collapse;font-size:10.5pt;color:#14252A">'+
     h.dem.map(f=>'<tr><td '+td+'><b>'+esc(f[0])+'</b></td><td '+td+'>'+esc(f[1])+'</td><td '+td+'>'+esc(f[2])+'</td><td '+td+'>'+esc(f[3])+'</td></tr>').join('')+'</table>':'';
+  const per=completo&&h.persona.length?'<h3 style="font-size:13pt;margin:0 0 6px;color:#14252A">Datos de la persona</h3><table style="width:100%;border-collapse:collapse;font-size:10.5pt;color:#14252A;margin-bottom:16px">'+
+    h.persona.map(f=>'<tr><td '+td.replace('vertical-align:top','vertical-align:top;width:38%;color:#566A70')+'>'+esc(f[0])+'</td><td '+td+'><b>'+esc(f[1])+'</b></td></tr>').join('')+'</table>':'';
   return '<div style="font-family:Arial,sans-serif;color:#14252A">'+
-    '<h2 style="font-size:16pt;margin:0 0 4px;color:#14252A">Medicación de '+esc(h.paciente)+'</h2>'+
-    '<div style="font-size:10pt;color:#566A70;margin-bottom:14px;">Tomas diarias · actualizado al '+h.fecha+'</div>'+
+    '<h2 style="font-size:16pt;margin:0 0 4px;color:#14252A">'+(completo?'Ficha médica de ':'Medicación de ')+esc(h.paciente)+'</h2>'+
+    '<div style="font-size:10pt;color:#566A70;margin-bottom:14px;">'+(completo?'Datos personales y tomas diarias':'Tomas diarias')+' · actualizado al '+h.fecha+'</div>'+per+
     '<table style="width:100%;border-collapse:collapse;font-size:10.5pt;color:#14252A"><tr><th '+th+'>Medicamento</th><th '+th+'>Droga</th><th '+th+'>Dosis</th><th '+th+'>Cantidad</th><th '+th+'>Para qué / notas</th></tr>'+
     (rows||'<tr><td colspan="5" '+td+'>No hay tomas diarias cargadas.</td></tr>')+'</table>'+demHtml+
     '<div style="font-size:8.5pt;color:#566A70;margin-top:22px;">Generado el '+h.fecha+' '+h.hora+'.</div></div>';
 }
-function pdfHoja(h){
+function pdfHoja(h,completo){
   const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:'mm',format:'a4'});
   const limpio=s=>String(s??'').replace(/[—–]/g,'-');
-  const INK=[20,37,42],MUTED=[86,106,112],SOFT=[220,237,239];
-  doc.setTextColor(...INK);doc.setFont('helvetica','bold');doc.setFontSize(16);doc.text(limpio('Medicación de '+h.paciente),14,18);
-  doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(...MUTED);doc.text('Tomas diarias - actualizado al '+h.fecha,14,24);
-  const body=[];
-  h.grupos.forEach(g=>{body.push([{content:limpio(g.titulo),colSpan:5,styles:{fillColor:SOFT,fontStyle:'bold'}}]);g.filas.forEach(f=>body.push(f.map(limpio)))});
-  if(!body.length)body.push([{content:'No hay tomas diarias cargadas.',colSpan:5}]);
+  const INK=[20,37,42],MUTED=[86,106,112],SOFT=[220,239,234];
+  doc.setTextColor(...INK);doc.setFont('helvetica','bold');doc.setFontSize(16);doc.text(limpio((completo?'Ficha médica de ':'Medicación de ')+h.paciente),14,18);
+  doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(...MUTED);doc.text((completo?'Datos personales y tomas diarias':'Tomas diarias')+' - actualizado al '+h.fecha,14,24);
   const base={theme:'plain',styles:{font:'helvetica',fontSize:10,textColor:INK,cellPadding:2,lineColor:[204,204,204],lineWidth:{bottom:0.2}},
     headStyles:{fontStyle:'bold',lineColor:INK,lineWidth:{bottom:0.6}},margin:{left:14,right:14},
     didParseCell:d=>{if(d.section==='body'&&d.column.index===0)d.cell.styles.fontStyle='bold'}};
-  doc.autoTable(Object.assign({},base,{startY:30,head:[['Medicamento','Droga','Dosis','Cantidad','Para qué / notas']],body:body}));
-  let y=doc.lastAutoTable.finalY+10;
+  let y=30;
+  if(completo&&h.persona.length){
+    doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(...INK);doc.text('Datos de la persona',14,y+2);
+    doc.autoTable({theme:'plain',startY:y+5,body:h.persona.map(f=>f.map(limpio)),margin:{left:14,right:14},
+      styles:{font:'helvetica',fontSize:10.5,textColor:INK,cellPadding:2,lineColor:[204,204,204],lineWidth:{bottom:0.2}},
+      columnStyles:{0:{cellWidth:55,textColor:MUTED},1:{fontStyle:'bold'}}});
+    y=doc.lastAutoTable.finalY+8;
+  }
+  const body=[];
+  h.grupos.forEach(g=>{body.push([{content:limpio(g.titulo),colSpan:5,styles:{fillColor:SOFT,fontStyle:'bold'}}]);g.filas.forEach(f=>body.push(f.map(limpio)))});
+  if(!body.length)body.push([{content:'No hay tomas diarias cargadas.',colSpan:5}]);
+  doc.autoTable(Object.assign({},base,{startY:y,head:[['Medicamento','Droga','Dosis','Cantidad','Para qué / notas']],body:body}));
+  y=doc.lastAutoTable.finalY+10;
   if(h.dem.length){
     if(y>260){doc.addPage();y=20}
     doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(...INK);doc.text('A demanda (solo si hace falta)',14,y);
@@ -794,20 +837,36 @@ function pdfHoja(h){
   return doc.output('blob');
 }
 function verHoja(){
-  const h=datosHoja();
-  const nombre='Medicacion '+(h.paciente||'')+' '+todayISO()+'.pdf';
-  let file=null,blob=null;
-  openModal('<h3>Hoja para el médico</h3><div class="muted small">Tocá <b>Compartir PDF</b> para mandarla por WhatsApp o Mail, o guardarla en Archivos.</div>'+
-    '<div class="hoja">'+htmlHoja(h)+'</div><div class="err"></div>'+
-    '<div class="formfoot"><button type="button" class="btn" data-close>Cerrar</button><button type="button" class="btn" id="pdf-down" disabled>Abrir PDF</button><button type="button" class="btn primary" id="pdf-share" disabled>Preparando PDF…</button></div>',null,
+  const h=datosHoja();const hayPersona=h.persona.length>0;
+  const base=(h.paciente||'')+' '+todayISO()+'.pdf';
+  const V={solo:{nombre:'Medicacion '+base},full:{nombre:'Ficha medica '+base}};
+  const modos=hayPersona?['solo','full']:['solo'];
+  const etq={solo:'Solo medicamentos',full:'Datos completos'};
+  openModal('<h3>Hoja para el médico</h3>'+
+    (hayPersona?'<div class="muted small">Elegí qué compartir: <b>Solo medicamentos</b> (farmacia, consulta común) o <b>Datos completos</b> (emergencia: tus datos personales arriba).</div>'
+      :'<div class="muted small">Para sumar tus datos personales (grupo sanguíneo, condiciones, etc.) completalos en <b>Stock → Ajustes y copia</b>.</div>')+
+    (hayPersona?'<div class="actions" style="margin-top:10px"><button type="button" class="btn primary" data-ver="full">Ver datos completos</button><button type="button" class="btn" data-ver="solo">Ver solo medicamentos</button></div>':'')+
+    '<div class="hoja" id="hojaPrev">'+htmlHoja(h,hayPersona)+'</div><div class="err"></div>'+
+    '<div class="formfoot" style="flex-direction:column;align-items:stretch">'+
+    modos.map(k=>'<button type="button" class="btn primary" data-pdf="'+k+'" disabled>Preparando PDF…</button>').join('')+
+    '<button type="button" class="btn" data-close>Cerrar</button></div>',null,
     ov=>{
-      const bs=ov.querySelector('#pdf-share'),bd=ov.querySelector('#pdf-down'),er=ov.querySelector('.err');
-      cargarPdfLibs().then(()=>{blob=pdfHoja(h);try{file=new File([blob],nombre,{type:'application/pdf'})}catch(e){}
-        const puede=!!(file&&navigator.canShare&&navigator.canShare({files:[file]}));
-        bs.textContent='Compartir PDF';bs.disabled=!puede;if(!puede)bs.hidden=true;bd.disabled=false;if(!puede)bd.classList.add('primary')})
-      .catch(x=>{bs.textContent='Compartir PDF';er.textContent=errMsg(x)});
-      bs.addEventListener('click',()=>{if(!file)return;navigator.share({files:[file],title:nombre}).catch(e=>{if(e&&e.name!=='AbortError')er.textContent='No se pudo compartir. Probá con Abrir PDF.'})});
-      bd.addEventListener('click',()=>{if(!blob)return;const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=nombre;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},60000)});
+      const er=ov.querySelector('.err');let compartir=false;
+      ov.querySelectorAll('[data-ver]').forEach(b=>b.addEventListener('click',()=>{
+        ov.querySelectorAll('[data-ver]').forEach(x=>x.classList.toggle('primary',x===b));
+        ov.querySelector('#hojaPrev').innerHTML=htmlHoja(h,b.dataset.ver==='full')}));
+      cargarPdfLibs().then(()=>{
+        modos.forEach(k=>{V[k].blob=pdfHoja(h,k==='full');try{V[k].file=new File([V[k].blob],V[k].nombre,{type:'application/pdf'})}catch(e){}});
+        compartir=!!(V.solo.file&&navigator.canShare&&navigator.canShare({files:[V.solo.file]}));
+        ov.querySelectorAll('[data-pdf]').forEach(b=>{const k=b.dataset.pdf;b.disabled=false;
+          b.textContent=hayPersona?(compartir?'Compartir ':'Abrir PDF: ')+etq[k].toLowerCase():(compartir?'Compartir PDF':'Abrir PDF');
+          if(k==='solo'&&hayPersona)b.classList.remove('primary')});
+      }).catch(x=>{er.textContent=errMsg(x)});
+      ov.querySelectorAll('[data-pdf]').forEach(b=>b.addEventListener('click',()=>{
+        const v=V[b.dataset.pdf];if(!v||!v.blob)return;
+        if(compartir&&v.file){navigator.share({files:[v.file],title:v.nombre}).catch(e=>{if(e&&e.name!=='AbortError')er.textContent='No se pudo compartir.'});return}
+        const url=URL.createObjectURL(v.blob);const a=document.createElement('a');a.href=url;a.download=v.nombre;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},60000);
+      }));
     });
 }
 function cargarExtras(){
