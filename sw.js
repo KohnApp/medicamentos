@@ -4,7 +4,7 @@
  * (Los DATOS del usuario no se tocan: viven en IndexedDB, no en este caché.) */
 const VERSION = 'med-1.1.0';
 const ARCHIVOS = ['./', './index.html', './manifest.json',
-  './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png'];
+  './icon-180.png', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
 const FUENTES = 'med-fuentes';
 
 self.addEventListener('install', e => {
