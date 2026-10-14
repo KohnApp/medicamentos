@@ -2,14 +2,15 @@
  * Solo funciona si la app se sirve por HTTPS.
  * Al publicar una versión nueva, cambiar VERSION: así los teléfonos bajan los archivos nuevos.
  * (Los DATOS del usuario no se tocan: viven en IndexedDB, no en este caché.) */
-const VERSION = 'med-1.2.0';
+const VERSION = 'med-1.2.1';
 const ARCHIVOS = ['./', './index.html', './manifest.json',
   './icon-180.png', './icon-192.png', './icon-512.png', './icon-maskable-512.png',
   './jspdf.min.js', './jspdf-autotable.min.js'];
 const FUENTES = 'med-fuentes';
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(ARCHIVOS)).then(() => self.skipWaiting()));
+  // cache:'reload' = pedir siempre la versión nueva al servidor, sin usar copias guardadas por el navegador
+  e.waitUntil(caches.open(VERSION).then(c => c.addAll(ARCHIVOS.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
@@ -33,7 +34,7 @@ self.addEventListener('fetch', e => {
   // Archivos de la app: responde al instante desde el caché y actualiza en segundo plano
   e.respondWith(caches.open(VERSION).then(async c => {
     const cached = await c.match(req, { ignoreSearch: true }) || (req.mode === 'navigate' ? await c.match('./index.html') : null);
-    const red = fetch(req).then(res => { if (res && res.ok) c.put(req, res.clone()); return res; }).catch(() => null);
+    const red = fetch(req, { cache: 'no-cache' }).then(res => { if (res && res.ok) c.put(req, res.clone()); return res; }).catch(() => null);
     if (cached) { e.waitUntil(red); return cached; }
     return (await red) || new Response('Sin conexión', { status: 503 });
   }));
